@@ -82,6 +82,13 @@
 - [x] **A14**: Create WeldQualityAnalyzer.ts
 - [x] **A15**: Create ScoringSystem.ts
 
+### Phase 7: Multiplayer & Training (After MERGE-6)
+- [x] **A16**: Create LocalCoopManager.ts
+- [x] **A17**: Create TrainingMetrics.ts
+
+### Phase 8: Integration (After MERGE-7)
+- [ ] **A18**: Create App.ts
+
 ---
 
 ## Instructions
