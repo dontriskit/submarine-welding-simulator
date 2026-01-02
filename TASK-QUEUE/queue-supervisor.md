@@ -43,6 +43,14 @@
   COMPLETED: 2026-01-02 - GameState + Camera system integrated
   ```
 
+- [x] **M5**: Review and merge Phase 5 (Systems + UI)
+  ```
+  PRs: CODER-A (A13-A15), CODER-B (B8-B9)
+  Test: TypeScript compiles, build passes
+  Order: Merge A first, then B
+  COMPLETED: 2026-01-02 - Welding/Scoring + Dashboard/UI integrated
+  ```
+
 ---
 
 ## Monitoring Tasks (Continuous)
@@ -130,4 +138,11 @@ echo "MERGE-X complete. Pull main."
 - Integration test PASSED: tsc --noEmit, npm run build
 - Pushed to origin/main
 - PROJECT AT 50% COMPLETE
-- NEXT: Wait for CODER-A (A13-A15) and CODER-B (B8-B9), then MERGE-5
+
+### 2026-01-02: MERGE-5 Integration
+- Merged dev/coder-a (A13-A15: WeldingSystem, WeldQualityAnalyzer, ScoringSystem) to main
+- Merged dev/coder-b (B8-B9: dashboard.css, UIManager) to main
+- Integration test PASSED: tsc --noEmit, npm run build
+- Pushed to origin/main
+- PROJECT AT 62% COMPLETE
+- NEXT: Wait for CODER-A (A16-A17) and CODER-B (B10-B12), then MERGE-6
