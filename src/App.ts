@@ -35,6 +35,7 @@ export class App {
   private container: HTMLElement | null = null;
   private isRunning: boolean = false;
   private wasWelding: boolean = false;
+  private frameCount: number = 0;
 
   constructor() {
     // Bind methods
@@ -249,6 +250,12 @@ export class App {
 
     // Render all camera viewports
     this.cameraManager.render();
+
+    // Debug logging - log every 60 frames (~1 second at 60fps)
+    this.frameCount++;
+    if (this.frameCount % 60 === 0) {
+      console.log(`Frame ${this.frameCount}, Submarine pos:`, this.submarine.position);
+    }
 
     // End frame for input (update previous states)
     inputManager.endFrame();
