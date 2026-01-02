@@ -1,107 +1,86 @@
-# CODER-A TASK QUEUE
+# CODER-A TASK QUEUE - FIX PHASE
 
-## Active Sprint Tasks
+## Status: Fixing Dark Screen Issue
 
-### Phase 1: Foundation
-- [x] **A1**: Initialize project with Vite + TypeScript + Three.js
-  ```
-  Files: package.json, vite.config.ts, tsconfig.json, index.html, .gitignore
-  Commands: npm init -y, npm install three vite typescript @types/three
-  Commit: [CODER-A] A1: Initialize Vite + TypeScript + Three.js project
-  ```
-
-### Phase 2: Core Systems
-- [x] **A2**: Create Engine.ts with Three.js renderer
-  ```
-  File: src/core/Engine.ts
-  Implements: IEngine interface
-  Features: WebGLRenderer, Scene, Clock, render loop, resize handling
-  Commit: [CODER-A] A2: Implement Engine with renderer and scene
-  ```
-
-- [x] **A3**: Create EventBus.ts for global events
-  ```
-  File: src/core/EventBus.ts
-  Implements: IEventBus interface
-  Features: on, off, emit, once methods
-  Commit: [CODER-A] A3: Add EventBus for decoupled communication
-  ```
-
-- [x] **A4**: Create Constants.ts with physics values
-  ```
-  File: src/core/Constants.ts
-  Content: SUBMARINE_MASS, DRAG_COEFFICIENT, MAX_SPEED, etc.
-  Values: From CORE-PLAN.md physics section
-  Commit: [CODER-A] A4: Define physics and game constants
-  ```
-
-### Phase 3: Input System
-- [x] **A5**: Create InputAction.ts enum
-  ```
-  File: src/input/InputAction.ts
-  Content: Copy enum from src/types/interfaces.ts
-  Commit: [CODER-A] A5: Define all input actions
-  ```
-
-- [x] **A6**: Create KeyboardController.ts
-  ```
-  File: src/input/KeyboardController.ts
-  Features: keydown/keyup tracking, getValue for bindings
-  Commit: [CODER-A] A6: Implement keyboard input controller
-  ```
-
-- [x] **A7**: Create GamepadController.ts
-  ```
-  File: src/input/GamepadController.ts
-  Features: Gamepad API polling, deadzone, axis scaling
-  Commit: [CODER-A] A7: Implement gamepad controller with VJOY support
-  ```
-
-- [x] **A8**: Create InputManager.ts
-  ```
-  File: src/input/InputManager.ts
-  Implements: IInputManager interface
-  Features: Coordinate keyboard/gamepad, mode switching, player routing
-  Commit: [CODER-A] A8: Create central input manager
-  ```
+All original 18 tasks complete. Now fixing rendering bug.
 
 ---
 
-## Waiting (Blocked on Merge)
+## GitHub Issues (Track progress at github.com)
 
-### Phase 4: Physics (After MERGE-3)
-- [x] **A9**: Create SubmarinePhysics.ts
-- [x] **A10**: Create WeldingArmPhysics.ts
+### Phase 1: Get Visible (Priority)
+- [ ] **#3** FIX-A1: Add main canvas render pass
+  - File: `src/cameras/CameraManager.ts`
+  - Add final render to visible canvas after viewport textures
+  - Label: `fix`, `coder-a`, `phase-1`
 
-### Phase 5: State (After MERGE-4)
-- [x] **A11**: Create GameState.ts
-- [x] **A12**: Create GameStateActions.ts
+- [ ] **#4** FIX-A2: Add main camera selection
+  - File: `src/cameras/CameraManager.ts`
+  - Add `setMainCamera()` and `cycleMainCamera()` methods
+  - Label: `fix`, `coder-a`, `phase-1`
 
-### Phase 6: Welding Systems (After MERGE-5)
-- [x] **A13**: Create WeldingSystem.ts
-- [x] **A14**: Create WeldQualityAnalyzer.ts
-- [x] **A15**: Create ScoringSystem.ts
+- [ ] **#6** FIX-A4: Add debug logging
+  - File: `src/App.ts`
+  - Add frame counter and render confirmation
+  - Label: `fix`, `coder-a`, `phase-1`
 
-### Phase 7: Multiplayer & Training (After MERGE-6)
-- [x] **A16**: Create LocalCoopManager.ts
-- [x] **A17**: Create TrainingMetrics.ts
+### Phase 2: Controls Working
+- [ ] **#7** FIX-A5: Verify input integration
+  - File: `src/App.ts`
+  - Ensure input→submarine→physics loop works
+  - Label: `fix`, `coder-a`
 
-### Phase 8: Integration (After MERGE-7)
-- [x] **A18**: Create App.ts
+- [ ] **#8** FIX-A6: Fix welding activation
+  - File: `src/App.ts`
+  - Ensure Numpad 0 triggers torch activation
+  - Label: `fix`, `coder-a`
+
+### Phase 3: Full UI
+- [ ] **#5** FIX-A3: Implement camera switching with Tab
+  - File: `src/App.ts`
+  - Wire Tab key to `cameraManager.cycleMainCamera()`
+  - Label: `fix`, `coder-a`
 
 ---
 
 ## Instructions
 
-1. Execute tasks top-to-bottom
-2. After completing each task:
-   - Commit with proper message format
-   - Change `[ ]` to `[x]` in this file
+1. Work on Phase 1 issues first (#3, #4, #6)
+2. After each fix:
+   - Test with `npm run dev`
+   - Commit with message: `[FIX-A#] description`
+   - Close issue with `gh issue close #`
    - Push to dev/coder-a
-3. When Phase 1-3 complete, create PR for MERGE-3
-4. Wait for SUPERVISOR to merge before continuing to Phase 4
+3. Verify submarine is visible before moving to Phase 2
+4. Create PR when all fixes complete
 
 ---
 
-## Log Completed Tasks
-<!-- Append completion timestamps here -->
+## Commands
+
+```bash
+# View assigned issues
+gh issue list --label coder-a
+
+# Work on issue
+git checkout dev/coder-a
+# Make changes...
+git commit -m "[FIX-A1] Add main canvas render pass"
+gh issue close 3
+git push origin dev/coder-a
+
+# Test
+npm run dev
+```
+
+---
+
+## Root Cause Reference
+
+The `CameraManager.render()` method only renders to WebGLRenderTargets (textures) but never renders to the visible canvas. After rendering 4 viewport textures, it sets render target back to `null` without actually rendering anything visible.
+
+**FIX:** Add final render pass after viewport textures:
+```typescript
+this.renderer.setRenderTarget(null);
+this.renderer.render(this.scene, mainCamera);
+```

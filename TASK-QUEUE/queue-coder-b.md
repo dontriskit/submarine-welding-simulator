@@ -1,145 +1,110 @@
-# CODER-B TASK QUEUE
+# CODER-B TASK QUEUE - FIX PHASE
 
-## Active Sprint Tasks
+## Status: Fixing Dark Screen Issue
 
-### Phase 1: Foundation
-- [x] **B1**: Create folder structure and asset directories
-  ```
-  Directories: src/{entities,cameras,ui,effects,environment,scenarios,missions,shaders}
-               public/{models,textures,audio,fonts}
-  Commit: [CODER-B] B1: Create project folder structure
-  ```
-
-### Phase 2: Environment
-- [x] **B2**: Create UnderwaterEnv.ts
-  ```
-  File: src/environment/UnderwaterEnv.ts
-  Features: FogExp2 (0x001a33, 0.015), ambient light (0x3366aa),
-            directional light (filtered sun), scene background
-  Commit: [CODER-B] B2: Implement underwater environment with fog and lighting
-  ```
+All original 15 tasks complete. Now fixing scene visibility and UI viewport display.
 
 ---
 
-## Waiting (After MERGE-2)
+## GitHub Issues (Track progress at github.com)
 
-### Phase 3: Entities
-- [x] **B3**: Create Submarine.ts entity
-  ```
-  File: src/entities/Submarine.ts
-  Implements: ISubmarine interface
-  Features: THREE.Group, hull geometry, lights, propeller
-  Commit: [CODER-B] B3: Create Submarine entity with hull geometry
-  ```
+### Phase 1: Get Visible (Priority)
+- [ ] **#11** FIX-B3: Add seafloor plane
+  - File: `src/environment/UnderwaterEnv.ts`
+  - Add visible ground reference at y=-50
+  - Label: `fix`, `coder-b`, `phase-1`
 
-- [x] **B4**: Create WeldingArm.ts
-  ```
-  File: src/entities/WeldingArm.ts
-  Implements: IWeldingArm interface
-  Features: 4 joint segments, articulation, parent to submarine
-  Commit: [CODER-B] B4: Implement articulated welding arm
-  ```
+- [ ] **#13** FIX-B5: Boost lighting
+  - File: `src/environment/UnderwaterEnv.ts`
+  - Increase ambient from 0.4→0.8, sun from 0.3→0.6
+  - Label: `fix`, `coder-b`, `phase-1`
 
-- [x] **B5**: Create WeldingTorch.ts
-  ```
-  File: src/entities/WeldingTorch.ts
-  Implements: IWeldingTorch interface
-  Features: Torch mesh, emissive tip, heat tracking, activate/deactivate
-  Commit: [CODER-B] B5: Add welding torch with activation state
-  ```
+### Phase 2: Controls Working
+- [ ] **#12** FIX-B4: Add pipe structure
+  - File: `src/environment/UnderwaterEnv.ts`
+  - Add weld target pipe for testing
+  - Label: `fix`, `coder-b`
 
----
+- [ ] **#14** FIX-B6: Enhance submarine lights
+  - File: `src/entities/Submarine.ts`
+  - Make headlights more visible
+  - Label: `fix`, `coder-b`
 
-## Waiting (After MERGE-3)
+### Phase 3: Full UI
+- [ ] **#9** FIX-B1: Create ViewportDisplay component
+  - File: `src/ui/ViewportDisplay.ts` (NEW)
+  - Component to render WebGLRenderTarget textures to UI canvases
+  - Label: `fix`, `coder-b`
 
-### Phase 4: Cameras
-- [x] **B6**: Create CameraRig.ts
-- [x] **B7**: Create CameraManager.ts
-
-### Phase 5: UI
-- [x] **B8**: Create dashboard.css
-- [x] **B9**: Create UIManager.ts
-
-### Phase 6: UI Components
-- [x] **B10**: Create HotkeyHints.ts
-  ```
-  File: src/ui/HotkeyHints.ts
-  Features: Modular hotkey hints panel, mode switching (single/coop)
-  Commit: [CODER-B] B10-B12: Add HotkeyHints, ObjectivesPanel, WeldingGauge components
-  ```
-
-- [x] **B11**: Create ObjectivesPanel.ts
-  ```
-  File: src/ui/ObjectivesPanel.ts
-  Features: Modular objectives display, progress tracking
-  Commit: [CODER-B] B10-B12: Add HotkeyHints, ObjectivesPanel, WeldingGauge components
-  ```
-
-- [x] **B12**: Create WeldingGauge.ts
-  ```
-  File: src/ui/WeldingGauge.ts
-  Features: Torch heat/intensity gauges, visual bars, warning states
-  Commit: [CODER-B] B10-B12: Add HotkeyHints, ObjectivesPanel, WeldingGauge components
-  ```
-
-### Phase 7: Missions & Scenarios
-- [x] **B13**: Create MissionLoader.ts
-  ```
-  Files: src/missions/MissionDefinition.ts, src/missions/MissionLoader.ts
-  Features: Mission types, load/start missions, track weld targets, GameState integration
-  Commit: [CODER-B] B13-B14: Add MissionLoader and Scenarios
-  ```
-
-- [x] **B14**: Create Scenarios
-  ```
-  Files: src/scenarios/ScenarioData.ts, TutorialScenario.ts, PipeRepairScenario.ts, index.ts
-  Features: Tutorial (3 easy welds), PipeRepair (5 welds + quality), scenario registry
-  Commit: [CODER-B] B13-B14: Add MissionLoader and Scenarios
-  ```
-
-### Phase 8: Effects
-- [x] **B15**: Create Effects (bubbles, sparks, caustics)
-  ```
-  Files: src/effects/BubbleEffect.ts, SparkEffect.ts, CausticsEffect.ts, index.ts
-  Features: Bubble particles with wobble, welding sparks with color gradient,
-            animated caustic light patterns using custom shader
-  Commit: [CODER-B] B15: Add effects (bubbles, sparks, caustics)
-  ```
-
----
-
-## ALL CODER-B TASKS COMPLETE
+- [ ] **#10** FIX-B2: Wire viewport displays to UI
+  - File: `src/ui/UIManager.ts`
+  - Connect ViewportDisplay to viewport panels
+  - Label: `fix`, `coder-b`
 
 ---
 
 ## Instructions
 
-1. Execute tasks top-to-bottom
-2. After completing each task:
-   - Commit with proper message format
-   - Change `[ ]` to `[x]` in this file
+1. Work on Phase 1 issues first (#11, #13)
+2. After each fix:
+   - Test with `npm run dev`
+   - Commit with message: `[FIX-B#] description`
+   - Close issue with `gh issue close #`
    - Push to dev/coder-b
-3. When B1-B2 complete, create PR for MERGE-2
-4. Wait for SUPERVISOR to merge before continuing
+3. Verify seafloor visible before moving to Phase 2
+4. Create PR when all fixes complete
 
 ---
 
-## Log Completed Tasks
-<!-- Append completion timestamps here -->
-- [x] B1: 2026-01-02 - Folder structure created
-- [x] B2: 2026-01-02 - UnderwaterEnv.ts implemented
-- [x] B3: 2026-01-02 - Submarine.ts entity implemented
-- [x] B4: 2026-01-02 - WeldingArm.ts entity implemented
-- [x] B5: 2026-01-02 - WeldingTorch.ts entity implemented
-- [x] B6: 2026-01-02 - CameraRig.ts implemented
-- [x] B7: 2026-01-02 - CameraManager.ts implemented
-- [x] B8: 2026-01-02 - dashboard.css implemented
-- [x] B9: 2026-01-02 - UIManager.ts implemented
-- [x] B10: 2026-01-02 - HotkeyHints.ts implemented
-- [x] B11: 2026-01-02 - ObjectivesPanel.ts implemented
-- [x] B12: 2026-01-02 - WeldingGauge.ts implemented
-- [x] B13: 2026-01-02 - MissionLoader.ts implemented
-- [x] B14: 2026-01-02 - Scenarios (Tutorial, PipeRepair) implemented
-- [x] B15: 2026-01-02 - Effects (bubbles, sparks, caustics) implemented
+## Commands
 
-## CODER-B COMPLETE: All 15 tasks finished!
+```bash
+# View assigned issues
+gh issue list --label coder-b
+
+# Work on issue
+git checkout dev/coder-b
+# Make changes...
+git commit -m "[FIX-B3] Add seafloor plane"
+gh issue close 11
+git push origin dev/coder-b
+
+# Test
+npm run dev
+```
+
+---
+
+## Key Fixes Reference
+
+### FIX-B3: Seafloor
+```typescript
+const floorGeometry = new THREE.PlaneGeometry(200, 200);
+const floorMaterial = new THREE.MeshStandardMaterial({
+  color: 0x2a1a0a,
+  roughness: 0.9
+});
+const floor = new THREE.Mesh(floorGeometry, floorMaterial);
+floor.rotation.x = -Math.PI / 2;
+floor.position.y = -50;
+this.scene.add(floor);
+```
+
+### FIX-B5: Lighting
+```typescript
+this.ambientLight = new THREE.AmbientLight(0x4488bb, 0.8);
+this.sunLight = new THREE.DirectionalLight(0xaaccee, 0.6);
+```
+
+---
+
+## Completed Tasks (Original Phase)
+
+All B1-B15 tasks from original build are complete:
+- B1-B2: Foundation + Environment
+- B3-B5: Entities (Submarine, Arm, Torch)
+- B6-B7: Cameras
+- B8-B9: UI Foundation
+- B10-B12: UI Components
+- B13-B14: Missions/Scenarios
+- B15: Effects
