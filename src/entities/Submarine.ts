@@ -193,8 +193,8 @@ export class Submarine implements ISubmarine {
       housing.name = `LightHousing_${index}`;
       this.mesh.add(housing);
 
-      // Spotlight
-      const spotlight = new THREE.SpotLight(0xffffee, 2, 30, Math.PI / 6, 0.5);
+      // Spotlight (FIX-B6: Enhanced intensity and range)
+      const spotlight = new THREE.SpotLight(0xffffee, 3.0, 50, Math.PI / 4, 0.3);
       spotlight.position.set(pos.x + 0.05, pos.y, pos.z);
       spotlight.target.position.set(pos.x + 10, pos.y, pos.z);
       spotlight.name = `Spotlight_${index}`;

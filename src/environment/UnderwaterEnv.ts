@@ -44,6 +44,8 @@ export class UnderwaterEnv {
   private ambientLight: THREE.AmbientLight;
   private sunLight: THREE.DirectionalLight;
   private seafloor: THREE.Mesh;
+  private pipe: THREE.Mesh;
+  private weldJoint: THREE.Mesh;
   private config: Required<UnderwaterEnvConfig>;
 
   constructor(scene: THREE.Scene, config: UnderwaterEnvConfig = {}) {
@@ -55,6 +57,9 @@ export class UnderwaterEnv {
     this.ambientLight = this.createAmbientLight();
     this.sunLight = this.createSunLight();
     this.seafloor = this.createSeafloor();
+    const pipeStructure = this.createPipeStructure();
+    this.pipe = pipeStructure.pipe;
+    this.weldJoint = pipeStructure.weldJoint;
 
     // Apply to scene
     this.applyToScene();
@@ -120,6 +125,38 @@ export class UnderwaterEnv {
   }
 
   /**
+   * Create pipe structure with weld target marker (FIX-B4)
+   */
+  private createPipeStructure(): { pipe: THREE.Mesh; weldJoint: THREE.Mesh } {
+    // Horizontal pipe
+    const pipeGeometry = new THREE.CylinderGeometry(0.5, 0.5, 10, 16);
+    const pipeMaterial = new THREE.MeshStandardMaterial({
+      color: 0x888888,
+      roughness: 0.6,
+      metalness: 0.8,
+    });
+    const pipe = new THREE.Mesh(pipeGeometry, pipeMaterial);
+    pipe.rotation.z = Math.PI / 2; // Make horizontal
+    pipe.position.set(10, -45, 0); // Near seafloor
+    pipe.castShadow = true;
+    pipe.receiveShadow = true;
+    pipe.name = 'weld-target-pipe';
+
+    // Weld joint marker (red ring)
+    const jointGeometry = new THREE.TorusGeometry(0.55, 0.05, 8, 24);
+    const jointMaterial = new THREE.MeshStandardMaterial({
+      color: 0xff4444,
+      emissive: 0x440000,
+    });
+    const weldJoint = new THREE.Mesh(jointGeometry, jointMaterial);
+    weldJoint.position.copy(pipe.position);
+    weldJoint.rotation.y = Math.PI / 2; // Align with pipe
+    weldJoint.name = 'weld-target-joint';
+
+    return { pipe, weldJoint };
+  }
+
+  /**
    * Apply all environment settings to the scene
    */
   private applyToScene(): void {
@@ -135,6 +172,10 @@ export class UnderwaterEnv {
 
     // Add seafloor
     this.scene.add(this.seafloor);
+
+    // Add pipe structure (FIX-B4)
+    this.scene.add(this.pipe);
+    this.scene.add(this.weldJoint);
   }
 
   /**
@@ -197,6 +238,15 @@ export class UnderwaterEnv {
     this.scene.remove(this.seafloor);
     this.seafloor.geometry.dispose();
     (this.seafloor.material as THREE.Material).dispose();
+
+    // Clean up pipe structure (FIX-B4)
+    this.scene.remove(this.pipe);
+    this.scene.remove(this.weldJoint);
+    this.pipe.geometry.dispose();
+    (this.pipe.material as THREE.Material).dispose();
+    this.weldJoint.geometry.dispose();
+    (this.weldJoint.material as THREE.Material).dispose();
+
     this.scene.fog = null;
     this.scene.background = null;
   }
