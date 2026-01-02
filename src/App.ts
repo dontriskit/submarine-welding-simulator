@@ -30,6 +30,7 @@ import {
   BATTERY_DRAIN_RATE,
   BATTERY_WELD_DRAIN_RATE,
 } from './core/Constants';
+import { collisionSystem } from './physics/CollisionSystem';
 
 /**
  * Main Application class
@@ -289,6 +290,15 @@ export class App {
 
     // Update submarine
     this.submarine.update(delta);
+
+    // Check and resolve collisions
+    const collision = collisionSystem.checkCollision(
+      this.submarine.mesh.position,
+      this.submarine.getVelocity()
+    );
+    if (collision.collided) {
+      this.submarine.mesh.position.copy(collision.position);
+    }
 
     // Update welding system
     this.updateWelding(delta);
