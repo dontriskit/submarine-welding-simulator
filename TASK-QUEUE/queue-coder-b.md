@@ -24,7 +24,7 @@
 ## Waiting (After MERGE-2)
 
 ### Phase 3: Entities
-- [ ] **B3**: Create Submarine.ts entity
+- [x] **B3**: Create Submarine.ts entity
   ```
   File: src/entities/Submarine.ts
   Implements: ISubmarine interface
@@ -32,7 +32,7 @@
   Commit: [CODER-B] B3: Create Submarine entity with hull geometry
   ```
 
-- [ ] **B4**: Create WeldingArm.ts
+- [x] **B4**: Create WeldingArm.ts
   ```
   File: src/entities/WeldingArm.ts
   Implements: IWeldingArm interface
@@ -40,7 +40,7 @@
   Commit: [CODER-B] B4: Implement articulated welding arm
   ```
 
-- [ ] **B5**: Create WeldingTorch.ts
+- [x] **B5**: Create WeldingTorch.ts
   ```
   File: src/entities/WeldingTorch.ts
   Implements: IWeldingTorch interface
@@ -78,3 +78,6 @@
 <!-- Append completion timestamps here -->
 - [x] B1: 2026-01-02 - Folder structure created
 - [x] B2: 2026-01-02 - UnderwaterEnv.ts implemented
+- [x] B3: 2026-01-02 - Submarine.ts entity implemented
+- [x] B4: 2026-01-02 - WeldingArm.ts entity implemented
+- [x] B5: 2026-01-02 - WeldingTorch.ts entity implemented
