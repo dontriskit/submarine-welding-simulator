@@ -1,0 +1,507 @@
+/**
+ * dashboard.css
+ * Styles for submarine welding simulator HUD and UI panels.
+ *
+ * CODER-B Task B8
+ */
+
+/* ============================================================================
+   CSS VARIABLES
+   ============================================================================ */
+
+:root {
+  --ui-primary: #00aaff;
+  --ui-secondary: #0066aa;
+  --ui-success: #00ff88;
+  --ui-warning: #ffaa00;
+  --ui-danger: #ff4444;
+  --ui-bg: rgba(0, 20, 40, 0.85);
+  --ui-bg-dark: rgba(0, 10, 20, 0.95);
+  --ui-border: rgba(0, 170, 255, 0.3);
+  --ui-text: #e0f0ff;
+  --ui-text-dim: #80a0c0;
+  --ui-glow: 0 0 10px rgba(0, 170, 255, 0.5);
+  --ui-font: 'Segoe UI', 'Roboto', sans-serif;
+  --ui-font-mono: 'Consolas', 'Monaco', monospace;
+}
+
+/* ============================================================================
+   DASHBOARD CONTAINER
+   ============================================================================ */
+
+.dashboard {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  z-index: 100;
+  font-family: var(--ui-font);
+  color: var(--ui-text);
+}
+
+.dashboard * {
+  box-sizing: border-box;
+}
+
+.dashboard > * {
+  pointer-events: auto;
+}
+
+/* ============================================================================
+   TOP BAR - Status Indicators
+   ============================================================================ */
+
+.top-bar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 50px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 20px;
+  background: linear-gradient(to bottom, var(--ui-bg-dark), transparent);
+}
+
+.status-panel {
+  display: flex;
+  gap: 20px;
+}
+
+.status-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  background: var(--ui-bg);
+  border: 1px solid var(--ui-border);
+  border-radius: 4px;
+}
+
+.status-item .label {
+  font-size: 11px;
+  text-transform: uppercase;
+  color: var(--ui-text-dim);
+}
+
+.status-item .value {
+  font-family: var(--ui-font-mono);
+  font-size: 16px;
+  font-weight: bold;
+  min-width: 50px;
+  text-align: right;
+}
+
+.status-item.warning .value {
+  color: var(--ui-warning);
+}
+
+.status-item.danger .value {
+  color: var(--ui-danger);
+  animation: pulse 0.5s ease-in-out infinite;
+}
+
+.score-panel {
+  display: flex;
+  gap: 15px;
+  align-items: center;
+}
+
+.score-display {
+  font-family: var(--ui-font-mono);
+  font-size: 24px;
+  font-weight: bold;
+  color: var(--ui-primary);
+  text-shadow: var(--ui-glow);
+}
+
+.multiplier {
+  font-size: 14px;
+  color: var(--ui-success);
+  padding: 2px 8px;
+  background: rgba(0, 255, 136, 0.2);
+  border-radius: 3px;
+}
+
+.timer {
+  font-family: var(--ui-font-mono);
+  font-size: 18px;
+  padding: 6px 12px;
+  background: var(--ui-bg);
+  border: 1px solid var(--ui-border);
+  border-radius: 4px;
+}
+
+.timer.warning {
+  color: var(--ui-warning);
+  border-color: var(--ui-warning);
+}
+
+.timer.danger {
+  color: var(--ui-danger);
+  border-color: var(--ui-danger);
+  animation: pulse 0.5s ease-in-out infinite;
+}
+
+/* ============================================================================
+   BOTTOM PANELS - Viewports and Info
+   ============================================================================ */
+
+.bottom-panels {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 180px;
+  display: flex;
+  gap: 10px;
+  padding: 10px;
+  background: linear-gradient(to top, var(--ui-bg-dark), transparent);
+}
+
+.viewport-panel {
+  width: 256px;
+  height: 160px;
+  background: var(--ui-bg);
+  border: 1px solid var(--ui-border);
+  border-radius: 4px;
+  overflow: hidden;
+  position: relative;
+}
+
+.viewport-panel .viewport-label {
+  position: absolute;
+  top: 4px;
+  left: 8px;
+  font-size: 10px;
+  text-transform: uppercase;
+  color: var(--ui-text-dim);
+  background: var(--ui-bg-dark);
+  padding: 2px 6px;
+  border-radius: 2px;
+}
+
+.viewport-panel canvas {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.objectives-panel {
+  flex: 1;
+  background: var(--ui-bg);
+  border: 1px solid var(--ui-border);
+  border-radius: 4px;
+  padding: 10px;
+  overflow-y: auto;
+}
+
+.objectives-panel h3 {
+  margin: 0 0 10px 0;
+  font-size: 12px;
+  text-transform: uppercase;
+  color: var(--ui-text-dim);
+  border-bottom: 1px solid var(--ui-border);
+  padding-bottom: 5px;
+}
+
+.objective-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 0;
+  font-size: 13px;
+}
+
+.objective-item.completed {
+  color: var(--ui-success);
+  text-decoration: line-through;
+  opacity: 0.7;
+}
+
+.objective-item .checkbox {
+  width: 16px;
+  height: 16px;
+  border: 2px solid var(--ui-border);
+  border-radius: 3px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.objective-item.completed .checkbox {
+  background: var(--ui-success);
+  border-color: var(--ui-success);
+}
+
+.objective-progress {
+  margin-left: auto;
+  font-family: var(--ui-font-mono);
+  font-size: 11px;
+  color: var(--ui-text-dim);
+}
+
+/* ============================================================================
+   NOTIFICATIONS
+   ============================================================================ */
+
+.notification-container {
+  position: absolute;
+  top: 60px;
+  right: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  z-index: 200;
+}
+
+.notification {
+  padding: 12px 20px;
+  background: var(--ui-bg);
+  border: 1px solid var(--ui-border);
+  border-left: 4px solid var(--ui-primary);
+  border-radius: 4px;
+  font-size: 14px;
+  max-width: 300px;
+  animation: slideIn 0.3s ease-out;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+}
+
+.notification.success {
+  border-left-color: var(--ui-success);
+}
+
+.notification.warning {
+  border-left-color: var(--ui-warning);
+}
+
+.notification.error {
+  border-left-color: var(--ui-danger);
+}
+
+.notification.fade-out {
+  animation: fadeOut 0.3s ease-out forwards;
+}
+
+/* ============================================================================
+   PAUSE OVERLAY
+   ============================================================================ */
+
+.pause-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(5px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 500;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s, visibility 0.3s;
+}
+
+.pause-overlay.visible {
+  opacity: 1;
+  visibility: visible;
+}
+
+.pause-menu {
+  background: var(--ui-bg);
+  border: 2px solid var(--ui-primary);
+  border-radius: 8px;
+  padding: 30px 50px;
+  text-align: center;
+  box-shadow: var(--ui-glow), 0 10px 40px rgba(0, 0, 0, 0.5);
+}
+
+.pause-menu h2 {
+  margin: 0 0 20px 0;
+  font-size: 32px;
+  color: var(--ui-primary);
+  text-shadow: var(--ui-glow);
+}
+
+.pause-menu .menu-item {
+  display: block;
+  width: 200px;
+  padding: 12px 20px;
+  margin: 10px 0;
+  background: transparent;
+  border: 1px solid var(--ui-border);
+  border-radius: 4px;
+  color: var(--ui-text);
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.pause-menu .menu-item:hover {
+  background: var(--ui-primary);
+  border-color: var(--ui-primary);
+  color: #000;
+}
+
+/* ============================================================================
+   HOTKEY HINTS
+   ============================================================================ */
+
+.hotkey-hints {
+  position: absolute;
+  bottom: 200px;
+  left: 20px;
+  background: var(--ui-bg);
+  border: 1px solid var(--ui-border);
+  border-radius: 4px;
+  padding: 10px 15px;
+  font-size: 12px;
+  max-width: 200px;
+}
+
+.hotkey-hints h4 {
+  margin: 0 0 8px 0;
+  font-size: 10px;
+  text-transform: uppercase;
+  color: var(--ui-text-dim);
+}
+
+.hotkey-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 3px 0;
+}
+
+.hotkey-item .key {
+  font-family: var(--ui-font-mono);
+  background: rgba(255, 255, 255, 0.1);
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-size: 11px;
+}
+
+.hotkey-item .action {
+  color: var(--ui-text-dim);
+}
+
+/* ============================================================================
+   WELDING GAUGE
+   ============================================================================ */
+
+.welding-gauge {
+  position: absolute;
+  right: 20px;
+  bottom: 200px;
+  width: 120px;
+  background: var(--ui-bg);
+  border: 1px solid var(--ui-border);
+  border-radius: 4px;
+  padding: 10px;
+}
+
+.welding-gauge h4 {
+  margin: 0 0 10px 0;
+  font-size: 10px;
+  text-transform: uppercase;
+  color: var(--ui-text-dim);
+  text-align: center;
+}
+
+.gauge-bar {
+  height: 8px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  margin: 8px 0;
+  overflow: hidden;
+}
+
+.gauge-bar .fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.1s;
+}
+
+.gauge-bar.heat .fill {
+  background: linear-gradient(to right, var(--ui-success), var(--ui-warning), var(--ui-danger));
+}
+
+.gauge-bar.intensity .fill {
+  background: var(--ui-primary);
+}
+
+.gauge-label {
+  display: flex;
+  justify-content: space-between;
+  font-size: 10px;
+  color: var(--ui-text-dim);
+}
+
+/* ============================================================================
+   ANIMATIONS
+   ============================================================================ */
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes fadeOut {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+}
+
+/* ============================================================================
+   RESPONSIVE
+   ============================================================================ */
+
+@media (max-width: 1024px) {
+  .bottom-panels {
+    height: 140px;
+  }
+
+  .viewport-panel {
+    width: 200px;
+    height: 120px;
+  }
+
+  .hotkey-hints {
+    display: none;
+  }
+}
+
+@media (max-width: 768px) {
+  .bottom-panels {
+    flex-wrap: wrap;
+    height: auto;
+  }
+
+  .viewport-panel {
+    width: calc(50% - 5px);
+  }
+
+  .objectives-panel {
+    width: 100%;
+  }
+}
