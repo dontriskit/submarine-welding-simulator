@@ -22,6 +22,7 @@ import { weldingSystem } from './systems/WeldingSystem';
 import { scoringSystem } from './systems/ScoringSystem';
 import { localCoopManager } from './multiplayer/LocalCoopManager';
 import { trainingMetrics } from './training/TrainingMetrics';
+import { BubbleEffect, SparkEffect, CausticsEffect } from './effects';
 
 /**
  * Main Application class
@@ -31,6 +32,11 @@ export class App {
   private submarine: Submarine | null = null;
   private cameraManager: CameraManager | null = null;
   private uiManager: UIManager | null = null;
+
+  // Effects (FIX: TEST-B3)
+  private bubbleEffect: BubbleEffect | null = null;
+  private sparkEffect: SparkEffect | null = null;
+  private causticsEffect: CausticsEffect | null = null;
 
   private container: HTMLElement | null = null;
   private isRunning: boolean = false;
@@ -76,6 +82,12 @@ export class App {
     // Initialize UI manager
     this.uiManager = new UIManager('ui-root');
     this.uiManager.setGameState(gameState);
+    this.uiManager.initViewports(this.engine.renderer); // FIX: TEST-B2
+
+    // Initialize effects (FIX: TEST-B3)
+    this.bubbleEffect = new BubbleEffect(this.engine.scene);
+    this.sparkEffect = new SparkEffect(this.engine.scene);
+    this.causticsEffect = new CausticsEffect(this.engine.scene);
 
     // Set up local co-op (default single player)
     localCoopManager.setupSinglePlayer();
@@ -132,6 +144,11 @@ export class App {
     this.engine?.dispose();
     inputManager.dispose();
 
+    // Dispose effects (FIX: TEST-B3)
+    this.bubbleEffect?.dispose();
+    this.sparkEffect?.dispose();
+    this.causticsEffect?.dispose();
+
     // Remove container
     if (this.container && this.container.parentElement) {
       this.container.parentElement.removeChild(this.container);
@@ -142,6 +159,9 @@ export class App {
     this.submarine = null;
     this.cameraManager = null;
     this.uiManager = null;
+    this.bubbleEffect = null;
+    this.sparkEffect = null;
+    this.causticsEffect = null;
     this.container = null;
 
     console.log('Submarine Welding Simulator disposed');
@@ -245,11 +265,25 @@ export class App {
     // Update cameras
     this.cameraManager.update(this.submarine);
 
+    // Update effects (FIX: TEST-B3)
+    this.bubbleEffect?.update(delta);
+    this.sparkEffect?.update(delta);
+    this.causticsEffect?.update(delta);
+
+    // Emit bubbles from submarine occasionally
+    if (Math.random() < 0.02) {
+      const subPos = this.submarine.position;
+      this.bubbleEffect?.emit(subPos, 2);
+    }
+
     // Update UI
     this.uiManager.update();
 
     // Render all camera viewports
     this.cameraManager.render();
+
+    // Update viewport displays with rendered textures (FIX: TEST-B2)
+    this.uiManager.updateViewports(this.cameraManager);
 
     // Debug logging - log every 60 frames (~1 second at 60fps)
     this.frameCount++;
@@ -403,6 +437,9 @@ export class App {
       // Collect weld sample
       const tipPosition = weldingArm.getTorchTipPosition();
       const direction = weldingArm.getTorchDirection();
+
+      // Emit sparks at torch position (FIX: TEST-B3)
+      this.sparkEffect?.emit(tipPosition, direction, torch.intensity);
 
       // Calculate approximate values for sample
       // In a full implementation, these would come from physics tracking

@@ -25,7 +25,7 @@ const HOTKEY_CONFIGS: Record<HotkeyMode, HotkeyHint[]> = {
   single: [
     { key: 'WASD', action: 'Move Sub' },
     { key: 'QE', action: 'Ascend/Descend' },
-    { key: 'IJKL', action: 'Arm Control' },
+    { key: 'Arrows', action: 'Arm Control' },
     { key: 'Space', action: 'Weld' },
     { key: 'L', action: 'Lights' },
     { key: 'Esc', action: 'Pause' },
@@ -33,7 +33,7 @@ const HOTKEY_CONFIGS: Record<HotkeyMode, HotkeyHint[]> = {
   'coop-keyboard': [
     { key: 'P1: WASD', action: 'Move Sub' },
     { key: 'P1: QE', action: 'Ascend/Descend' },
-    { key: 'P2: IJKL', action: 'Arm Control' },
+    { key: 'P2: Arrows', action: 'Arm Control' },
     { key: 'P2: Space', action: 'Weld' },
     { key: 'Esc', action: 'Pause' },
   ],
