@@ -156,6 +156,14 @@ export class CameraManager implements ICameraManager {
   }
 
   /**
+   * Get the render target for a viewport (for reading pixels)
+   */
+  public getRenderTarget(id: string): THREE.WebGLRenderTarget | null {
+    const viewport = this.viewports.get(id as ViewportId);
+    return viewport ? viewport.renderTarget : null;
+  }
+
+  /**
    * Get the main camera for primary rendering
    */
   public getMainCamera(): THREE.Camera {

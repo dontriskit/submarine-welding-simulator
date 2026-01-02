@@ -6,10 +6,12 @@
  * Updated with B10-B12 component integration
  */
 
-import type { IUIManager, IGameState, GameStateData } from '../types/interfaces';
+import * as THREE from 'three';
+import type { IUIManager, IGameState, GameStateData, ICameraManager } from '../types/interfaces';
 import { HotkeyHints, HotkeyMode } from './HotkeyHints';
 import { ObjectivesPanel } from './ObjectivesPanel';
 import { WeldingGauge } from './WeldingGauge';
+import { ViewportDisplay } from './ViewportDisplay';
 import './dashboard.css';
 
 /**
@@ -37,6 +39,9 @@ export class UIManager implements IUIManager {
   private hotkeyHintsComponent: HotkeyHints | null = null;
   private objectivesPanelComponent: ObjectivesPanel | null = null;
   private weldingGaugeComponent: WeldingGauge | null = null;
+
+  // Viewport displays (FIX-B1, FIX-B2)
+  private viewportDisplays: Map<string, ViewportDisplay> = new Map();
 
   private notifications: HTMLElement[] = [];
 
@@ -350,6 +355,39 @@ export class UIManager implements IUIManager {
   }
 
   /**
+   * Initialize viewport displays with renderer (FIX-B1, FIX-B2)
+   * Call this after renderer is created
+   */
+  public initViewports(renderer: THREE.WebGLRenderer): void {
+    // Create viewport displays for welding and external cameras
+    const viewportConfigs: Array<{ id: string; width: number; height: number }> = [
+      { id: 'welding', width: 256, height: 160 },
+      { id: 'external', width: 256, height: 160 },
+    ];
+
+    for (const config of viewportConfigs) {
+      const container = this.getViewportElement(config.id as 'welding' | 'external');
+      if (container) {
+        const display = new ViewportDisplay(container, renderer, config.width, config.height);
+        this.viewportDisplays.set(config.id, display);
+      }
+    }
+  }
+
+  /**
+   * Update viewport displays with camera render targets (FIX-B2)
+   * Call this every frame after cameraManager.render()
+   */
+  public updateViewports(cameraManager: ICameraManager): void {
+    for (const [id, display] of this.viewportDisplays) {
+      const renderTarget = cameraManager.getRenderTarget(id);
+      if (renderTarget) {
+        display.updateFromRenderTarget(renderTarget);
+      }
+    }
+  }
+
+  /**
    * Get the welding gauge component for direct access
    */
   public getWeldingGauge(): WeldingGauge | null {
@@ -382,6 +420,12 @@ export class UIManager implements IUIManager {
     this.hotkeyHintsComponent = null;
     this.objectivesPanelComponent = null;
     this.weldingGaugeComponent = null;
+
+    // Dispose viewport displays (FIX-B1, FIX-B2)
+    for (const display of this.viewportDisplays.values()) {
+      display.dispose();
+    }
+    this.viewportDisplays.clear();
 
     this.container.innerHTML = '';
     this.notifications = [];

@@ -345,6 +345,9 @@ export interface ICameraManager {
   /** Get the texture for a viewport (for UI display) */
   getViewportTexture(id: 'welding' | 'external' | 'navigation' | 'minimap'): THREE.Texture | null;
 
+  /** Get the render target for a viewport (for reading pixels) */
+  getRenderTarget(id: string): THREE.WebGLRenderTarget | null;
+
   /** Get the main camera */
   getMainCamera(): THREE.Camera;
 
