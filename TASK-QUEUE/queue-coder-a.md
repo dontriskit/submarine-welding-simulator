@@ -70,8 +70,8 @@
 ## Waiting (Blocked on Merge)
 
 ### Phase 4: Physics (After MERGE-3)
-- [ ] **A9**: Create SubmarinePhysics.ts
-- [ ] **A10**: Create WeldingArmPhysics.ts
+- [x] **A9**: Create SubmarinePhysics.ts
+- [x] **A10**: Create WeldingArmPhysics.ts
 
 ### Phase 5: State (After MERGE-4)
 - [ ] **A11**: Create GameState.ts
