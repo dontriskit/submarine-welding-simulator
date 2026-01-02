@@ -97,6 +97,19 @@
   Commit: [CODER-B] B13-B14: Add MissionLoader and Scenarios
   ```
 
+### Phase 8: Effects
+- [x] **B15**: Create Effects (bubbles, sparks, caustics)
+  ```
+  Files: src/effects/BubbleEffect.ts, SparkEffect.ts, CausticsEffect.ts, index.ts
+  Features: Bubble particles with wobble, welding sparks with color gradient,
+            animated caustic light patterns using custom shader
+  Commit: [CODER-B] B15: Add effects (bubbles, sparks, caustics)
+  ```
+
+---
+
+## ALL CODER-B TASKS COMPLETE
+
 ---
 
 ## Instructions
@@ -127,3 +140,6 @@
 - [x] B12: 2026-01-02 - WeldingGauge.ts implemented
 - [x] B13: 2026-01-02 - MissionLoader.ts implemented
 - [x] B14: 2026-01-02 - Scenarios (Tutorial, PipeRepair) implemented
+- [x] B15: 2026-01-02 - Effects (bubbles, sparks, caustics) implemented
+
+## CODER-B COMPLETE: All 15 tasks finished!
