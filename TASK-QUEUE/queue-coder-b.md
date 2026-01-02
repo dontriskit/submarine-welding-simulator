@@ -53,8 +53,8 @@
 ## Waiting (After MERGE-3)
 
 ### Phase 4: Cameras
-- [ ] **B6**: Create CameraRig.ts
-- [ ] **B7**: Create CameraManager.ts
+- [x] **B6**: Create CameraRig.ts
+- [x] **B7**: Create CameraManager.ts
 
 ### Phase 5: UI
 - [ ] **B8**: Create dashboard.css
@@ -81,3 +81,5 @@
 - [x] B3: 2026-01-02 - Submarine.ts entity implemented
 - [x] B4: 2026-01-02 - WeldingArm.ts entity implemented
 - [x] B5: 2026-01-02 - WeldingTorch.ts entity implemented
+- [x] B6: 2026-01-02 - CameraRig.ts implemented
+- [x] B7: 2026-01-02 - CameraManager.ts implemented
