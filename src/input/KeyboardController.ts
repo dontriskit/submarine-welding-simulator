@@ -30,6 +30,7 @@ export const DEFAULT_PILOT_BINDINGS: ReadonlyMap<string, InputAction> = new Map(
   // System
   ['Escape', InputAction.PAUSE],
   ['KeyC', InputAction.CAMERA_CYCLE],
+  ['Tab', InputAction.CAMERA_CYCLE],
   ['KeyL', InputAction.TOGGLE_LIGHTS],
 ]);
 
@@ -48,6 +49,7 @@ export const DEFAULT_WELDER_BINDINGS: ReadonlyMap<string, InputAction> = new Map
   ['BracketRight', InputAction.ARM_ROTATE_CW],
   // Welding controls
   ['Enter', InputAction.WELD_ACTIVATE],
+  ['Numpad0', InputAction.WELD_ACTIVATE],
   ['Equal', InputAction.WELD_INTENSITY_UP],
   ['Minus', InputAction.WELD_INTENSITY_DOWN],
 ]);
