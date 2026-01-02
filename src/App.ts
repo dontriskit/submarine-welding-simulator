@@ -490,7 +490,15 @@ export class App {
       const workAngle = 90 - Math.abs(direction.y) * 90; // Simplified
       const travelAngle = 15; // Default travel angle
       const arcLength = 3.0; // Default arc length (mm)
-      const distanceToTarget = 0; // Would be calculated from weld path
+
+      // Calculate actual distance to nearest weld target
+      let distanceToTarget = 0;
+      if (this.missionLoader) {
+        const targets = this.missionLoader.getIncompleteWeldTargets();
+        const proximity = weldingSystem.checkProximityToTarget(tipPosition, targets);
+        // Convert from meters to mm for the quality analyzer
+        distanceToTarget = proximity.distance * 1000;
+      }
 
       weldingSystem.addSample(
         tipPosition,
