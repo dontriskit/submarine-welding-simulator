@@ -3,7 +3,7 @@
 ## Active Sprint Tasks
 
 ### Phase 1: Foundation
-- [ ] **A1**: Initialize project with Vite + TypeScript + Three.js
+- [x] **A1**: Initialize project with Vite + TypeScript + Three.js
   ```
   Files: package.json, vite.config.ts, tsconfig.json, index.html, .gitignore
   Commands: npm init -y, npm install three vite typescript @types/three
@@ -11,7 +11,7 @@
   ```
 
 ### Phase 2: Core Systems
-- [ ] **A2**: Create Engine.ts with Three.js renderer
+- [x] **A2**: Create Engine.ts with Three.js renderer
   ```
   File: src/core/Engine.ts
   Implements: IEngine interface
@@ -19,7 +19,7 @@
   Commit: [CODER-A] A2: Implement Engine with renderer and scene
   ```
 
-- [ ] **A3**: Create EventBus.ts for global events
+- [x] **A3**: Create EventBus.ts for global events
   ```
   File: src/core/EventBus.ts
   Implements: IEventBus interface
@@ -27,7 +27,7 @@
   Commit: [CODER-A] A3: Add EventBus for decoupled communication
   ```
 
-- [ ] **A4**: Create Constants.ts with physics values
+- [x] **A4**: Create Constants.ts with physics values
   ```
   File: src/core/Constants.ts
   Content: SUBMARINE_MASS, DRAG_COEFFICIENT, MAX_SPEED, etc.
@@ -36,28 +36,28 @@
   ```
 
 ### Phase 3: Input System
-- [ ] **A5**: Create InputAction.ts enum
+- [x] **A5**: Create InputAction.ts enum
   ```
   File: src/input/InputAction.ts
   Content: Copy enum from src/types/interfaces.ts
   Commit: [CODER-A] A5: Define all input actions
   ```
 
-- [ ] **A6**: Create KeyboardController.ts
+- [x] **A6**: Create KeyboardController.ts
   ```
   File: src/input/KeyboardController.ts
   Features: keydown/keyup tracking, getValue for bindings
   Commit: [CODER-A] A6: Implement keyboard input controller
   ```
 
-- [ ] **A7**: Create GamepadController.ts
+- [x] **A7**: Create GamepadController.ts
   ```
   File: src/input/GamepadController.ts
   Features: Gamepad API polling, deadzone, axis scaling
   Commit: [CODER-A] A7: Implement gamepad controller with VJOY support
   ```
 
-- [ ] **A8**: Create InputManager.ts
+- [x] **A8**: Create InputManager.ts
   ```
   File: src/input/InputManager.ts
   Implements: IInputManager interface
