@@ -9,6 +9,7 @@ import * as THREE from 'three';
 import { type IWeldingSystem, type WeldQualityResult, GameEvents } from '../types/interfaces';
 import { EventBus } from '../core/EventBus';
 import { analyzeWeldQuality, type WeldSample } from '../training/WeldQualityAnalyzer';
+import type { WeldTarget } from '../missions/MissionDefinition';
 
 export class WeldingSystem implements IWeldingSystem {
   private welding: boolean = false;
@@ -172,6 +173,41 @@ export class WeldingSystem implements IWeldingSystem {
     // stdDev of 2mm or more = unstable (-1.0)
     const normalizedStdDev = Math.min(stdDev / 2, 1);
     this.arcStability = 1 - normalizedStdDev * 2;
+  }
+
+  /**
+   * Check proximity of torch position to nearest weld target
+   * Returns the nearest target and distance in meters
+   */
+  public checkProximityToTarget(
+    torchPosition: THREE.Vector3,
+    targets: WeldTarget[]
+  ): { target: WeldTarget | null; distance: number } {
+    if (targets.length === 0) {
+      return { target: null, distance: Infinity };
+    }
+
+    let nearestTarget: WeldTarget | null = null;
+    let nearestDistance = Infinity;
+
+    for (const target of targets) {
+      // Convert target position to Vector3
+      const targetPos = new THREE.Vector3(
+        target.position.x,
+        target.position.y,
+        target.position.z
+      );
+
+      // Calculate distance from torch to target center
+      const distance = torchPosition.distanceTo(targetPos);
+
+      if (distance < nearestDistance) {
+        nearestDistance = distance;
+        nearestTarget = target;
+      }
+    }
+
+    return { target: nearestTarget, distance: nearestDistance };
   }
 
   /**

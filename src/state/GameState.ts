@@ -31,6 +31,7 @@ type Subscriber = (state: GameStateData) => void;
 function createInitialState(): GameStateData {
   return {
     phase: 'menu',
+    missionResult: null,
     submarine: createInitialSubmarineState(),
     welding: createInitialWeldingState(),
     score: createInitialScoreState(),
@@ -94,6 +95,13 @@ function reducer(state: GameStateData, action: GameStateAction): GameStateData {
       return {
         ...state,
         phase: action.phase,
+      };
+    }
+
+    case 'SET_MISSION_RESULT': {
+      return {
+        ...state,
+        missionResult: action.result,
       };
     }
 

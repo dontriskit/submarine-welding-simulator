@@ -13,7 +13,7 @@ import { EventBus } from './core/EventBus';
 import { inputManager } from './input/InputManager';
 import { InputAction, GameEvents, type WeldQualityResult } from './types/interfaces';
 import { gameState } from './state/GameState';
-import { setPhase, updateSubmarine, updateWelding, tickTime } from './state/GameStateActions';
+import { setPhase, setMissionResult, updateSubmarine, updateWelding, tickTime } from './state/GameStateActions';
 import { Submarine } from './entities/Submarine';
 import { CameraManager } from './cameras/CameraManager';
 import { UnderwaterEnv } from './environment/UnderwaterEnv';
@@ -23,6 +23,14 @@ import { scoringSystem } from './systems/ScoringSystem';
 import { localCoopManager } from './multiplayer/LocalCoopManager';
 import { trainingMetrics } from './training/TrainingMetrics';
 import { BubbleEffect, SparkEffect, CausticsEffect } from './effects';
+import { MissionLoader } from './missions/MissionLoader';
+import { SCENARIOS } from './scenarios/index';
+import {
+  OXYGEN_CONSUMPTION_RATE,
+  BATTERY_DRAIN_RATE,
+  BATTERY_WELD_DRAIN_RATE,
+} from './core/Constants';
+import { collisionSystem } from './physics/CollisionSystem';
 
 /**
  * Main Application class
@@ -32,6 +40,7 @@ export class App {
   private submarine: Submarine | null = null;
   private cameraManager: CameraManager | null = null;
   private uiManager: UIManager | null = null;
+  private missionLoader: MissionLoader | null = null;
 
   // Effects (FIX: TEST-B3)
   private bubbleEffect: BubbleEffect | null = null;
@@ -73,8 +82,21 @@ export class App {
     this.submarine = new Submarine();
     this.engine.scene.add(this.submarine.mesh);
 
-    // Position submarine at starting location
-    this.submarine.mesh.position.set(0, -10, 0);
+    // Initialize mission loader
+    this.missionLoader = new MissionLoader(gameState);
+
+    // Register all scenarios
+    for (const scenario of Object.values(SCENARIOS)) {
+      this.missionLoader.registerMission(scenario);
+    }
+
+    // Load default mission (Pipe Repair)
+    this.missionLoader.loadMissionById('pipe-repair-01');
+    this.missionLoader.startMission();
+
+    // Position submarine at mission spawn
+    const spawn = this.missionLoader.getSpawnPosition();
+    this.submarine.mesh.position.set(spawn.x, spawn.y, spawn.z);
 
     // Initialize camera manager
     this.cameraManager = new CameraManager(this.engine.renderer, this.engine.scene);
@@ -154,11 +176,15 @@ export class App {
       this.container.parentElement.removeChild(this.container);
     }
 
+    // Unload mission
+    this.missionLoader?.unloadMission();
+
     // Clear references
     this.engine = null;
     this.submarine = null;
     this.cameraManager = null;
     this.uiManager = null;
+    this.missionLoader = null;
     this.bubbleEffect = null;
     this.sparkEffect = null;
     this.causticsEffect = null;
@@ -203,6 +229,21 @@ export class App {
       const result = data as WeldQualityResult;
       // Show notification with rating
       this.uiManager?.showNotification(`Weld Complete: ${result.rating} (${result.overallScore})`);
+    });
+
+    // Listen for weld completion to update mission objectives
+    EventBus.on(GameEvents.WELD_COMPLETED, (_data: unknown) => {
+      // For now, use first incomplete target (proximity detection in #25)
+      if (this.missionLoader) {
+        const targets = this.missionLoader.getIncompleteWeldTargets();
+        if (targets.length > 0) {
+          // Get quality from game state arc stability (approximate)
+          const state = gameState.getState();
+          const quality = state.welding.arcStability * 100;
+          this.missionLoader.completeWeldTarget(targets[0].id, quality);
+          console.log(`Mission: Completed weld target ${targets[0].id} with quality ${quality.toFixed(0)}`);
+        }
+      }
     });
   }
 
@@ -250,6 +291,15 @@ export class App {
     // Update submarine
     this.submarine.update(delta);
 
+    // Check and resolve collisions
+    const collision = collisionSystem.checkCollision(
+      this.submarine.mesh.position,
+      this.submarine.getVelocity()
+    );
+    if (collision.collided) {
+      this.submarine.mesh.position.copy(collision.position);
+    }
+
     // Update welding system
     this.updateWelding(delta);
 
@@ -259,8 +309,30 @@ export class App {
     // Update game state time
     gameState.dispatch(tickTime(delta));
 
+    // Update resource depletion (oxygen and battery)
+    this.updateResources(delta);
+
     // Sync submarine state to game state
     this.syncSubmarineState();
+
+    // Check for resource depletion game over
+    const currentState = gameState.getState();
+    if (currentState.submarine.oxygen <= 0 || currentState.submarine.battery <= 0) {
+      this.missionLoader?.endMission(false);
+      gameState.dispatch(setMissionResult('failure'));
+      gameState.dispatch(setPhase('results'));
+      const reason = currentState.submarine.oxygen <= 0 ? 'Oxygen depleted' : 'Battery depleted';
+      console.log(`Game Over: ${reason}`);
+    }
+
+    // Check mission end conditions
+    if (this.missionLoader?.shouldMissionEnd()) {
+      const success = this.missionLoader.areAllObjectivesComplete();
+      this.missionLoader.endMission(success);
+      gameState.dispatch(setMissionResult(success ? 'success' : 'failure'));
+      gameState.dispatch(setPhase('results'));
+      console.log(`Mission ended: ${success ? 'SUCCESS' : 'FAILED'}`);
+    }
 
     // Update cameras
     this.cameraManager.update(this.submarine);
@@ -447,7 +519,15 @@ export class App {
       const workAngle = 90 - Math.abs(direction.y) * 90; // Simplified
       const travelAngle = 15; // Default travel angle
       const arcLength = 3.0; // Default arc length (mm)
-      const distanceToTarget = 0; // Would be calculated from weld path
+
+      // Calculate actual distance to nearest weld target
+      let distanceToTarget = 0;
+      if (this.missionLoader) {
+        const targets = this.missionLoader.getIncompleteWeldTargets();
+        const proximity = weldingSystem.checkProximityToTarget(tipPosition, targets);
+        // Convert from meters to mm for the quality analyzer
+        distanceToTarget = proximity.distance * 1000;
+      }
 
       weldingSystem.addSample(
         tipPosition,
@@ -484,6 +564,27 @@ export class App {
       position: { x: pos.x, y: pos.y, z: pos.z },
       rotation: { x: rot.x, y: rot.y, z: rot.z },
       depth: Math.abs(pos.y),
+    }));
+  }
+
+  /**
+   * Update resource consumption (oxygen and battery)
+   */
+  private updateResources(delta: number): void {
+    const state = gameState.getState();
+
+    // Oxygen depletes constantly
+    const newOxygen = Math.max(0, state.submarine.oxygen - OXYGEN_CONSUMPTION_RATE * delta);
+
+    // Battery drains faster when welding
+    const isWelding = state.welding.torchActive;
+    const batteryDrain = isWelding ? BATTERY_WELD_DRAIN_RATE : BATTERY_DRAIN_RATE;
+    const newBattery = Math.max(0, state.submarine.battery - batteryDrain * delta);
+
+    // Update state with new resource values
+    gameState.dispatch(updateSubmarine({
+      oxygen: newOxygen,
+      battery: newBattery,
     }));
   }
 }

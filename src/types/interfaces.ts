@@ -202,6 +202,7 @@ export interface MissionStateData {
  */
 export interface GameStateData {
   phase: 'menu' | 'briefing' | 'playing' | 'paused' | 'results';
+  missionResult: 'success' | 'failure' | null;
   submarine: SubmarineStateData;
   welding: WeldingArmStateData;
   score: ScoreStateData;
@@ -219,6 +220,7 @@ export interface GameStateData {
  */
 export type GameStateAction =
   | { type: 'SET_PHASE'; phase: GameStateData['phase'] }
+  | { type: 'SET_MISSION_RESULT'; result: 'success' | 'failure' | null }
   | { type: 'UPDATE_SUBMARINE'; submarine: Partial<SubmarineStateData> }
   | { type: 'UPDATE_WELDING'; welding: Partial<WeldingArmStateData> }
   | { type: 'ADD_SCORE'; points: number }
