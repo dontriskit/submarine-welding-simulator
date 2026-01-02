@@ -1,14 +1,15 @@
 /**
- * Main entry point for the Submarine Welding Simulator
+ * Submarine Welding Simulator - Entry Point
  *
- * This file will be extended during final integration (MERGE-7)
- * Currently serves as a placeholder to verify the build system works
+ * This file will be replaced with full App integration at A18.
+ * For now, it serves as a placeholder for Vite to bundle.
  */
 
-console.log('Submarine Welding Simulator - Initializing...');
+console.log('Submarine Welding Simulator initializing...');
 
-// Placeholder - will be replaced with App initialization at MERGE-7
-const appElement = document.getElementById('app');
-if (appElement) {
-  appElement.innerHTML = '<h1 style="color: #0af; text-align: center; margin-top: 40vh;">Submarine Welding Simulator</h1><p style="color: #fff; text-align: center;">Build system initialized. Core systems loading...</p>';
-}
+// TODO(A18): Import and initialize App orchestrator
+// import { App } from './App';
+// const app = new App();
+// app.start();
+
+export {};

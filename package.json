@@ -1,24 +1,17 @@
 {
   "name": "submarine-welding-simulator",
-  "version": "1.0.0",
-  "description": "Underwater welding training simulator with local co-op",
+  "version": "0.1.0",
+  "description": "Underwater welding training simulator",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/dontriskit/submarine-welding-simulator.git"
-  },
-  "keywords": [],
+  "keywords": ["three.js", "welding", "simulator", "training"],
   "author": "",
-  "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/dontriskit/submarine-welding-simulator/issues"
-  },
-  "homepage": "https://github.com/dontriskit/submarine-welding-simulator#readme",
+  "license": "MIT",
   "dependencies": {
     "three": "^0.182.0"
   },

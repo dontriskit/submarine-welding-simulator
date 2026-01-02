@@ -6,7 +6,7 @@ export default defineConfig({
     open: true,
   },
   build: {
-    outDir: 'dist',
+    target: 'esnext',
     sourcemap: true,
   },
 });
