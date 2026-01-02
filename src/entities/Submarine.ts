@@ -11,10 +11,14 @@ import { WeldingArm } from './WeldingArm';
 import {
   SUBMARINE_MASS,
   DRAG_COEFFICIENT,
+  DRAG_QUADRATIC,
   MAX_SPEED,
   MAX_ROTATION_SPEED,
   THRUSTER_FORCE,
   VERTICAL_THRUSTER_FORCE,
+  INPUT_SMOOTHING,
+  COAST_DAMPING,
+  ROTATION_DAMPING,
 } from '../core/Constants';
 
 /**
@@ -32,11 +36,17 @@ export class Submarine implements ISubmarine {
   private velocity: THREE.Vector3 = new THREE.Vector3();
   private angularVelocity: THREE.Vector3 = new THREE.Vector3();
 
-  // Input state
+  // Input state (raw from controller)
   private inputForward: number = 0;
   private inputStrafe: number = 0;
   private inputVertical: number = 0;
   private inputRoll: number = 0;
+
+  // Smoothed input (for underwater feel - gradual response)
+  private smoothedForward: number = 0;
+  private smoothedStrafe: number = 0;
+  private smoothedVertical: number = 0;
+  private smoothedRoll: number = 0;
 
   constructor() {
     this.mesh = new THREE.Group();
@@ -296,45 +306,81 @@ export class Submarine implements ISubmarine {
 
   /**
    * Update submarine state (called every frame)
+   * Implements realistic underwater physics with momentum and drag
    */
   public update(delta: number): void {
-    // Calculate forces
+    // Smooth input for sluggish underwater response
+    // Input gradually approaches target (like fighting water resistance)
+    this.smoothedForward += (this.inputForward - this.smoothedForward) * INPUT_SMOOTHING;
+    this.smoothedStrafe += (this.inputStrafe - this.smoothedStrafe) * INPUT_SMOOTHING;
+    this.smoothedVertical += (this.inputVertical - this.smoothedVertical) * INPUT_SMOOTHING;
+    this.smoothedRoll += (this.inputRoll - this.smoothedRoll) * INPUT_SMOOTHING;
+
+    // Calculate thrust force using smoothed input
     const thrustForce = new THREE.Vector3(
-      this.inputForward * THRUSTER_FORCE,
-      this.inputVertical * VERTICAL_THRUSTER_FORCE,
-      this.inputStrafe * THRUSTER_FORCE * 0.5
+      this.smoothedForward * THRUSTER_FORCE,
+      this.smoothedVertical * VERTICAL_THRUSTER_FORCE,
+      this.smoothedStrafe * THRUSTER_FORCE * 0.5
     );
 
     // Transform thrust to world space based on submarine orientation
     thrustForce.applyQuaternion(this.mesh.quaternion);
 
     // Apply acceleration (F = ma)
-    const acceleration = thrustForce.divideScalar(SUBMARINE_MASS);
+    const acceleration = thrustForce.clone().divideScalar(SUBMARINE_MASS);
     this.velocity.add(acceleration.multiplyScalar(delta));
 
-    // Apply drag
-    const dragForce = this.velocity.clone().multiplyScalar(-DRAG_COEFFICIENT);
-    this.velocity.add(dragForce.multiplyScalar(delta));
+    // Apply realistic water drag (linear + quadratic)
+    // Drag increases with speed squared (realistic fluid dynamics)
+    const speed = this.velocity.length();
+    if (speed > 0.001) {
+      const dragDirection = this.velocity.clone().normalize().negate();
+      const linearDrag = DRAG_COEFFICIENT * speed;
+      const quadraticDrag = DRAG_QUADRATIC * speed * speed;
+      const totalDrag = (linearDrag + quadraticDrag) * delta;
 
-    // Clamp velocity
+      // Don't let drag reverse velocity
+      const dragMagnitude = Math.min(totalDrag, speed);
+      this.velocity.add(dragDirection.multiplyScalar(dragMagnitude));
+    }
+
+    // Apply coasting damping when no input (gradual slowdown)
+    const hasInput = Math.abs(this.inputForward) > 0.1 ||
+                     Math.abs(this.inputStrafe) > 0.1 ||
+                     Math.abs(this.inputVertical) > 0.1;
+    if (!hasInput) {
+      this.velocity.multiplyScalar(COAST_DAMPING);
+    }
+
+    // Clamp velocity to max speed
     if (this.velocity.length() > MAX_SPEED) {
       this.velocity.normalize().multiplyScalar(MAX_SPEED);
+    }
+
+    // Stop very small velocities (prevents endless drift)
+    if (this.velocity.length() < 0.01) {
+      this.velocity.set(0, 0, 0);
     }
 
     // Apply velocity to position
     this.mesh.position.add(this.velocity.clone().multiplyScalar(delta));
 
-    // Angular movement (roll)
-    this.angularVelocity.z = this.inputRoll * MAX_ROTATION_SPEED;
+    // Angular movement with momentum
+    const targetAngularZ = this.smoothedRoll * MAX_ROTATION_SPEED;
+    this.angularVelocity.z += (targetAngularZ - this.angularVelocity.z) * INPUT_SMOOTHING * 2;
 
-    // Apply angular drag
-    this.angularVelocity.multiplyScalar(1 - delta * 2);
+    // Apply rotation damping (heavy, sluggish feel)
+    this.angularVelocity.multiplyScalar(ROTATION_DAMPING);
 
-    // Apply angular velocity
+    // Apply angular velocity to rotation
     this.mesh.rotation.z += this.angularVelocity.z * delta;
 
+    // Subtle pitch based on forward velocity (nose dips when moving forward)
+    const forwardSpeed = this.smoothedForward * 0.05;
+    this.mesh.rotation.x = THREE.MathUtils.lerp(this.mesh.rotation.x, forwardSpeed, 0.02);
+
     // Propeller animation (speed based on thrust)
-    const propSpeed = Math.abs(this.inputForward) * 20 + 2;
+    const propSpeed = Math.abs(this.smoothedForward) * 15 + 1;
     this.propeller.parent!.rotation.x += propSpeed * delta;
 
     // Update welding arm

@@ -6,11 +6,11 @@
  */
 
 // ============================================================================
-// SUBMARINE PHYSICS
+// SUBMARINE PHYSICS - Realistic Underwater Feel
 // ============================================================================
 
-/** Submarine mass in kg */
-export const SUBMARINE_MASS = 5000;
+/** Submarine mass in kg (heavy = sluggish response) */
+export const SUBMARINE_MASS = 8000;
 
 /** Water density in kg/m³ */
 export const WATER_DENSITY = 1025;
@@ -21,26 +21,38 @@ export const GRAVITY = 9.81;
 /** Buoyancy force multiplier */
 export const BUOYANCY_FORCE = 1.02;
 
-/** Linear drag coefficient */
-export const DRAG_COEFFICIENT = 0.8;
+/** Linear drag coefficient (higher = more water resistance) */
+export const DRAG_COEFFICIENT = 2.5;
+
+/** Quadratic drag coefficient (drag increases with speed squared) */
+export const DRAG_QUADRATIC = 0.8;
 
 /** Angular drag coefficient */
-export const ANGULAR_DRAG = 2.0;
+export const ANGULAR_DRAG = 3.0;
 
-/** Maximum linear speed in m/s */
-export const MAX_SPEED = 5.0;
+/** Maximum linear speed in m/s (slower for realism) */
+export const MAX_SPEED = 4.0;
 
 /** Maximum rotation speed in rad/s */
-export const MAX_ROTATION_SPEED = 0.5;
+export const MAX_ROTATION_SPEED = 0.3;
 
 /** Maximum depth in meters */
 export const MAX_DEPTH = 200;
 
 /** Thruster force in Newtons */
-export const THRUSTER_FORCE = 15000;
+export const THRUSTER_FORCE = 20000;
 
 /** Vertical thruster force in Newtons */
-export const VERTICAL_THRUSTER_FORCE = 12000;
+export const VERTICAL_THRUSTER_FORCE = 16000;
+
+/** Input smoothing factor (0-1, lower = more sluggish) */
+export const INPUT_SMOOTHING = 0.08;
+
+/** Velocity damping when no input (coasting) */
+export const COAST_DAMPING = 0.985;
+
+/** Rotation damping for heavy feel */
+export const ROTATION_DAMPING = 0.92;
 
 // ============================================================================
 // WELDING ARM PHYSICS
