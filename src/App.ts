@@ -13,7 +13,7 @@ import { EventBus } from './core/EventBus';
 import { inputManager } from './input/InputManager';
 import { InputAction, GameEvents, type WeldQualityResult } from './types/interfaces';
 import { gameState } from './state/GameState';
-import { setPhase, updateSubmarine, updateWelding, tickTime } from './state/GameStateActions';
+import { setPhase, setMissionResult, updateSubmarine, updateWelding, tickTime } from './state/GameStateActions';
 import { Submarine } from './entities/Submarine';
 import { CameraManager } from './cameras/CameraManager';
 import { UnderwaterEnv } from './environment/UnderwaterEnv';
@@ -309,14 +309,17 @@ export class App {
     const currentState = gameState.getState();
     if (currentState.submarine.oxygen <= 0 || currentState.submarine.battery <= 0) {
       this.missionLoader?.endMission(false);
+      gameState.dispatch(setMissionResult('failure'));
       gameState.dispatch(setPhase('results'));
-      console.log('Game Over: Resources depleted');
+      const reason = currentState.submarine.oxygen <= 0 ? 'Oxygen depleted' : 'Battery depleted';
+      console.log(`Game Over: ${reason}`);
     }
 
     // Check mission end conditions
     if (this.missionLoader?.shouldMissionEnd()) {
       const success = this.missionLoader.areAllObjectivesComplete();
       this.missionLoader.endMission(success);
+      gameState.dispatch(setMissionResult(success ? 'success' : 'failure'));
       gameState.dispatch(setPhase('results'));
       console.log(`Mission ended: ${success ? 'SUCCESS' : 'FAILED'}`);
     }

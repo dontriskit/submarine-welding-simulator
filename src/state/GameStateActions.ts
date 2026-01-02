@@ -20,6 +20,13 @@ export function setPhase(phase: GameStateData['phase']): GameStateAction {
 }
 
 /**
+ * Set the mission result (success/failure/null)
+ */
+export function setMissionResult(result: 'success' | 'failure' | null): GameStateAction {
+  return { type: 'SET_MISSION_RESULT', result };
+}
+
+/**
  * Update submarine state (partial update)
  */
 export function updateSubmarine(submarine: Partial<SubmarineStateData>): GameStateAction {
