@@ -1,15 +1,23 @@
 /**
  * Submarine Welding Simulator - Entry Point
  *
- * This file will be replaced with full App integration at A18.
- * For now, it serves as a placeholder for Vite to bundle.
+ * Main entry point that initializes and starts the application.
  */
 
-console.log('Submarine Welding Simulator initializing...');
+import { app } from './App';
 
-// TODO(A18): Import and initialize App orchestrator
-// import { App } from './App';
-// const app = new App();
-// app.start();
+// Start the application when DOM is ready
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', () => {
+    app.start().catch(console.error);
+  });
+} else {
+  app.start().catch(console.error);
+}
 
-export {};
+// Handle cleanup on page unload
+window.addEventListener('beforeunload', () => {
+  app.dispose();
+});
+
+export { app };
