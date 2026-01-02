@@ -3,7 +3,7 @@
 ## Active Sprint Tasks
 
 ### Phase 1: Foundation
-- [ ] **B1**: Create folder structure and asset directories
+- [x] **B1**: Create folder structure and asset directories
   ```
   Directories: src/{entities,cameras,ui,effects,environment,scenarios,missions,shaders}
                public/{models,textures,audio,fonts}
@@ -11,7 +11,7 @@
   ```
 
 ### Phase 2: Environment
-- [ ] **B2**: Create UnderwaterEnv.ts
+- [x] **B2**: Create UnderwaterEnv.ts
   ```
   File: src/environment/UnderwaterEnv.ts
   Features: FogExp2 (0x001a33, 0.015), ambient light (0x3366aa),
@@ -76,3 +76,5 @@
 
 ## Log Completed Tasks
 <!-- Append completion timestamps here -->
+- B1: Folder structure created - 2026-01-02
+- B2: UnderwaterEnv.ts implemented - 2026-01-02
