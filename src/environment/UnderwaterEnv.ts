@@ -27,10 +27,10 @@ export interface UnderwaterEnvConfig {
 const DEFAULT_CONFIG: Required<UnderwaterEnvConfig> = {
   fogColor: 0x001a33,
   fogDensity: 0.015,
-  ambientColor: 0x3366aa,
-  ambientIntensity: 0.4,
-  sunColor: 0x88aacc,
-  sunIntensity: 0.3,
+  ambientColor: 0x4488bb,
+  ambientIntensity: 0.8,
+  sunColor: 0xaaccee,
+  sunIntensity: 0.6,
   sunPosition: new THREE.Vector3(0, 100, 50),
   backgroundColor: 0x001122,
 };
@@ -43,6 +43,7 @@ export class UnderwaterEnv {
   private fog: THREE.FogExp2;
   private ambientLight: THREE.AmbientLight;
   private sunLight: THREE.DirectionalLight;
+  private seafloor: THREE.Mesh;
   private config: Required<UnderwaterEnvConfig>;
 
   constructor(scene: THREE.Scene, config: UnderwaterEnvConfig = {}) {
@@ -53,6 +54,7 @@ export class UnderwaterEnv {
     this.fog = this.createFog();
     this.ambientLight = this.createAmbientLight();
     this.sunLight = this.createSunLight();
+    this.seafloor = this.createSeafloor();
 
     // Apply to scene
     this.applyToScene();
@@ -100,6 +102,24 @@ export class UnderwaterEnv {
   }
 
   /**
+   * Create seafloor plane for visual depth reference
+   */
+  private createSeafloor(): THREE.Mesh {
+    const floorGeometry = new THREE.PlaneGeometry(200, 200, 20, 20);
+    const floorMaterial = new THREE.MeshStandardMaterial({
+      color: 0x2a1a0a, // Dark sandy brown
+      roughness: 0.9,
+      metalness: 0.1,
+    });
+    const floor = new THREE.Mesh(floorGeometry, floorMaterial);
+    floor.rotation.x = -Math.PI / 2;
+    floor.position.y = -50; // Below submarine start position
+    floor.receiveShadow = true;
+    floor.name = 'seafloor';
+    return floor;
+  }
+
+  /**
    * Apply all environment settings to the scene
    */
   private applyToScene(): void {
@@ -112,6 +132,9 @@ export class UnderwaterEnv {
     // Add lights to scene
     this.scene.add(this.ambientLight);
     this.scene.add(this.sunLight);
+
+    // Add seafloor
+    this.scene.add(this.seafloor);
   }
 
   /**
@@ -171,6 +194,9 @@ export class UnderwaterEnv {
   public dispose(): void {
     this.scene.remove(this.ambientLight);
     this.scene.remove(this.sunLight);
+    this.scene.remove(this.seafloor);
+    this.seafloor.geometry.dispose();
+    (this.seafloor.material as THREE.Material).dispose();
     this.scene.fog = null;
     this.scene.background = null;
   }
