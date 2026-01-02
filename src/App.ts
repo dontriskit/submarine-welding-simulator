@@ -31,6 +31,7 @@ import {
   BATTERY_WELD_DRAIN_RATE,
 } from './core/Constants';
 import { collisionSystem } from './physics/CollisionSystem';
+import { PipelineScene } from './environment/PipelineScene';
 
 /**
  * Main Application class
@@ -46,6 +47,9 @@ export class App {
   private bubbleEffect: BubbleEffect | null = null;
   private sparkEffect: SparkEffect | null = null;
   private causticsEffect: CausticsEffect | null = null;
+
+  // Pipeline scene (Issue #28)
+  private pipelineScene: PipelineScene | null = null;
 
   private container: HTMLElement | null = null;
   private isRunning: boolean = false;
@@ -111,6 +115,9 @@ export class App {
     this.sparkEffect = new SparkEffect(this.engine.scene);
     this.causticsEffect = new CausticsEffect(this.engine.scene);
 
+    // Initialize pipeline scene (Issue #28)
+    this.pipelineScene = new PipelineScene(this.engine.scene);
+
     // Set up local co-op (default single player)
     localCoopManager.setupSinglePlayer();
 
@@ -171,6 +178,9 @@ export class App {
     this.sparkEffect?.dispose();
     this.causticsEffect?.dispose();
 
+    // Dispose pipeline scene (Issue #28)
+    this.pipelineScene?.dispose();
+
     // Remove container
     if (this.container && this.container.parentElement) {
       this.container.parentElement.removeChild(this.container);
@@ -188,6 +198,7 @@ export class App {
     this.bubbleEffect = null;
     this.sparkEffect = null;
     this.causticsEffect = null;
+    this.pipelineScene = null;
     this.container = null;
 
     console.log('Submarine Welding Simulator disposed');
