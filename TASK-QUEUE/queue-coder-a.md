@@ -87,7 +87,7 @@
 - [x] **A17**: Create TrainingMetrics.ts
 
 ### Phase 8: Integration (After MERGE-7)
-- [ ] **A18**: Create App.ts
+- [x] **A18**: Create App.ts
 
 ---
 
