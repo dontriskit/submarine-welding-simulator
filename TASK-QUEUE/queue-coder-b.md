@@ -76,5 +76,5 @@
 
 ## Log Completed Tasks
 <!-- Append completion timestamps here -->
-- B1: Folder structure created - 2026-01-02
-- B2: UnderwaterEnv.ts implemented - 2026-01-02
+- [x] B1: 2026-01-02 - Folder structure created
+- [x] B2: 2026-01-02 - UnderwaterEnv.ts implemented
