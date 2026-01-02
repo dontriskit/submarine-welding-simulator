@@ -51,6 +51,14 @@
   COMPLETED: 2026-01-02 - Welding/Scoring + Dashboard/UI integrated
   ```
 
+- [x] **M6**: Review and merge Phase 6 (Multiplayer + UI Components)
+  ```
+  PRs: CODER-A (A16-A17), CODER-B (B10-B12)
+  Test: TypeScript compiles, build passes
+  Order: Merge A first, then B
+  COMPLETED: 2026-01-02 - LocalCoopManager/TrainingMetrics + UI Components integrated
+  ```
+
 ---
 
 ## Monitoring Tasks (Continuous)
@@ -145,4 +153,11 @@ echo "MERGE-X complete. Pull main."
 - Integration test PASSED: tsc --noEmit, npm run build
 - Pushed to origin/main
 - PROJECT AT 62% COMPLETE
-- NEXT: Wait for CODER-A (A16-A17) and CODER-B (B10-B12), then MERGE-6
+
+### 2026-01-02: MERGE-6 Integration
+- Merged dev/coder-a (A16-A17: LocalCoopManager, TrainingMetrics) to main
+- Merged dev/coder-b (B10-B12: HotkeyHints, ObjectivesPanel, WeldingGauge) to main
+- Integration test PASSED: tsc --noEmit, npm run build
+- Pushed to origin/main
+- PROJECT AT 75% COMPLETE
+- NEXT: Wait for CODER-A (A18) and CODER-B (B13-B15), then FINAL MERGE
