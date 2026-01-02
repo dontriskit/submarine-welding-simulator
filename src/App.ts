@@ -291,6 +291,11 @@ export class App {
       InputAction.SUB_ROLL_RIGHT
     );
 
+    // Debug: Log significant input for verification (Issue #7)
+    if (Math.abs(forward) > 0.1 || Math.abs(strafe) > 0.1) {
+      console.log(`Input: forward=${forward.toFixed(2)}, strafe=${strafe.toFixed(2)}`);
+    }
+
     // Apply to submarine
     this.submarine.applyInput(forward, strafe, vertical, roll);
 
