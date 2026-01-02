@@ -82,6 +82,21 @@
   Commit: [CODER-B] B10-B12: Add HotkeyHints, ObjectivesPanel, WeldingGauge components
   ```
 
+### Phase 7: Missions & Scenarios
+- [x] **B13**: Create MissionLoader.ts
+  ```
+  Files: src/missions/MissionDefinition.ts, src/missions/MissionLoader.ts
+  Features: Mission types, load/start missions, track weld targets, GameState integration
+  Commit: [CODER-B] B13-B14: Add MissionLoader and Scenarios
+  ```
+
+- [x] **B14**: Create Scenarios
+  ```
+  Files: src/scenarios/ScenarioData.ts, TutorialScenario.ts, PipeRepairScenario.ts, index.ts
+  Features: Tutorial (3 easy welds), PipeRepair (5 welds + quality), scenario registry
+  Commit: [CODER-B] B13-B14: Add MissionLoader and Scenarios
+  ```
+
 ---
 
 ## Instructions
@@ -110,3 +125,5 @@
 - [x] B10: 2026-01-02 - HotkeyHints.ts implemented
 - [x] B11: 2026-01-02 - ObjectivesPanel.ts implemented
 - [x] B12: 2026-01-02 - WeldingGauge.ts implemented
+- [x] B13: 2026-01-02 - MissionLoader.ts implemented
+- [x] B14: 2026-01-02 - Scenarios (Tutorial, PipeRepair) implemented
