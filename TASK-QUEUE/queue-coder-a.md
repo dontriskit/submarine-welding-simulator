@@ -74,8 +74,8 @@
 - [x] **A10**: Create WeldingArmPhysics.ts
 
 ### Phase 5: State (After MERGE-4)
-- [ ] **A11**: Create GameState.ts
-- [ ] **A12**: Create GameStateActions.ts
+- [x] **A11**: Create GameState.ts
+- [x] **A12**: Create GameStateActions.ts
 
 ---
 
