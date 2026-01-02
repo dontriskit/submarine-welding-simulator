@@ -3,25 +3,28 @@
 ## Active Sprint Tasks
 
 ### Initial Setup
-- [ ] **S1**: Verify project structure after CODER-A/B complete Phase 1
+- [x] **S1**: Verify project structure after CODER-A/B complete Phase 1
   ```
   Check: package.json exists, npm install works, folders created
   Action: Review and prepare for MERGE-1
+  COMPLETED: 2026-01-02
   ```
 
 ### Merge Point Reviews
-- [ ] **M1**: Review and merge Phase 1 (Foundation)
+- [x] **M1**: Review and merge Phase 1 (Foundation)
   ```
   PRs: CODER-A (A1), CODER-B (B1)
   Test: npm install && npm run dev (should start without error)
   Order: Merge A first, then B
+  COMPLETED: 2026-01-02 - Merged with MERGE-2
   ```
 
-- [ ] **M2**: Review and merge Phase 2 (Core + Environment)
+- [x] **M2**: Review and merge Phase 2 (Core + Environment)
   ```
-  PRs: CODER-A (A2-A4), CODER-B (B2)
+  PRs: CODER-A (A2-A4 + A5-A8), CODER-B (B2)
   Test: Scene renders with underwater fog
   Order: Merge A first, then B
+  COMPLETED: 2026-01-02 - Build passes, TypeScript compiles
   ```
 
 - [ ] **M3**: Review and merge Phase 3 (Input + Entities)
@@ -98,3 +101,11 @@ echo "MERGE-X complete. Pull main."
 
 ## Log Actions
 <!-- Append actions here -->
+
+### 2026-01-02: MERGE-2 Integration
+- Merged dev/coder-a (A1-A8: Foundation, Core, Input) to main
+- Merged dev/coder-b (B1-B2: Structure, Environment) to main
+- Resolved conflicts in shared files (.gitignore, package.json, etc.)
+- Integration test PASSED: npm install, tsc --noEmit, npm run build
+- Pushed to origin/main
+- NEXT: Wait for CODER-B to complete B3-B5, then MERGE-3
