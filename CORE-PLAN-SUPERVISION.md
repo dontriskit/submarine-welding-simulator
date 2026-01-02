@@ -428,14 +428,14 @@ Update this section after each merge:
 ```
 PHASE 1: ████████████████████ 100% [MERGE 1 ✓]
 PHASE 2: ████████████████████ 100% [MERGE 2 ✓]
-PHASE 3: ██████████░░░░░░░░░░  50% [A5-A8 ✓, B3-B5 pending]
-PHASE 4: ░░░░░░░░░░░░░░░░░░░░   0% [MERGE 4 pending]
+PHASE 3: ████████████████████ 100% [MERGE 3 ✓]
+PHASE 4: ██████████░░░░░░░░░░  50% [A9-A10 ✓, B6-B7 pending]
 PHASE 5: ░░░░░░░░░░░░░░░░░░░░   0% [MERGE 5 pending]
 PHASE 6: ░░░░░░░░░░░░░░░░░░░░   0% [MERGE 6 pending]
 PHASE 7: ░░░░░░░░░░░░░░░░░░░░   0% [MERGE 7 pending]
 PHASE 8: ░░░░░░░░░░░░░░░░░░░░   0% [FINAL pending]
 
-OVERALL: █████░░░░░░░░░░░░░░░  25%
+OVERALL: ███████░░░░░░░░░░░░░  37%
 ```
 
 ---

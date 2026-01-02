@@ -27,11 +27,12 @@
   COMPLETED: 2026-01-02 - Build passes, TypeScript compiles
   ```
 
-- [ ] **M3**: Review and merge Phase 3 (Input + Entities)
+- [x] **M3**: Review and merge Phase 3 (Input + Entities)
   ```
-  PRs: CODER-A (A5-A8), CODER-B (B3-B5)
-  Test: Submarine visible, input responds
+  PRs: CODER-A (A9-A10), CODER-B (B3-B5)
+  Test: TypeScript compiles, build passes
   Order: Merge A first, then B
+  COMPLETED: 2026-01-02 - Physics + Entities integrated
   ```
 
 ---
@@ -108,4 +109,10 @@ echo "MERGE-X complete. Pull main."
 - Resolved conflicts in shared files (.gitignore, package.json, etc.)
 - Integration test PASSED: npm install, tsc --noEmit, npm run build
 - Pushed to origin/main
-- NEXT: Wait for CODER-B to complete B3-B5, then MERGE-3
+
+### 2026-01-02: MERGE-3 Integration
+- Merged dev/coder-a (A9-A10: SubmarinePhysics, WeldingArmPhysics) to main
+- Merged dev/coder-b (B3-B5: Submarine, WeldingArm, WeldingTorch) to main
+- Integration test PASSED: tsc --noEmit, npm run build
+- Pushed to origin/main
+- NEXT: Wait for CODER-A (A11-A12) and CODER-B (B6-B7), then MERGE-4
