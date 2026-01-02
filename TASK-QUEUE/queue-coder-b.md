@@ -57,8 +57,8 @@
 - [x] **B7**: Create CameraManager.ts
 
 ### Phase 5: UI
-- [ ] **B8**: Create dashboard.css
-- [ ] **B9**: Create UIManager.ts
+- [x] **B8**: Create dashboard.css
+- [x] **B9**: Create UIManager.ts
 
 ---
 
@@ -83,3 +83,5 @@
 - [x] B5: 2026-01-02 - WeldingTorch.ts entity implemented
 - [x] B6: 2026-01-02 - CameraRig.ts implemented
 - [x] B7: 2026-01-02 - CameraManager.ts implemented
+- [x] B8: 2026-01-02 - dashboard.css implemented
+- [x] B9: 2026-01-02 - UIManager.ts implemented
