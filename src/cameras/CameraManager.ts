@@ -224,20 +224,21 @@ export class CameraManager implements ICameraManager {
   }
 
   /**
-   * Render all viewports to their render targets
+   * Render all viewports to their render targets and main view to screen
    */
   public render(): void {
-    // Store current render target
-    const currentRenderTarget = this.renderer.getRenderTarget();
-
-    // Render each viewport
+    // Render each viewport to its render target (for UI textures)
     for (const viewport of this.viewports.values()) {
       this.renderer.setRenderTarget(viewport.renderTarget);
       this.renderer.render(this.scene, viewport.rig.getCamera());
     }
 
-    // Restore original render target
-    this.renderer.setRenderTarget(currentRenderTarget);
+    // CRITICAL: Render main view to screen (canvas)
+    this.renderer.setRenderTarget(null);
+    const mainViewport = this.viewports.get(this.mainCameraId);
+    if (mainViewport) {
+      this.renderer.render(this.scene, mainViewport.rig.getCamera());
+    }
   }
 
   /**
