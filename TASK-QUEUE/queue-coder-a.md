@@ -1,58 +1,52 @@
-# CODER-A TASK QUEUE - FIX PHASE
+# CODER-A TASK QUEUE - GAME MECHANICS
 
-## Status: Fixing Dark Screen Issue
+## Status: Implementing Core Game Mechanics
 
-All original 18 tasks complete. Now fixing rendering bug.
+Previous phases complete. Now implementing gameplay mechanics.
 
 ---
 
 ## GitHub Issues (Track progress at github.com)
 
-### Phase 1: Get Visible (Priority)
-- [ ] **#3** FIX-A1: Add main canvas render pass
-  - File: `src/cameras/CameraManager.ts`
-  - Add final render to visible canvas after viewport textures
-  - Label: `fix`, `coder-a`, `phase-1`
+### Critical Path (Do First)
+- [ ] **#26** A-MECH-4: Connect mission system to gameplay
+  - Files: `src/App.ts`, `src/missions/MissionLoader.ts`
+  - Load mission on start, position submarine, track objectives
+  - Label: `enhancement`
 
-- [ ] **#4** FIX-A2: Add main camera selection
-  - File: `src/cameras/CameraManager.ts`
-  - Add `setMainCamera()` and `cycleMainCamera()` methods
-  - Label: `fix`, `coder-a`, `phase-1`
+- [ ] **#25** A-MECH-3: Implement weld target proximity detection
+  - Files: `src/systems/WeldingSystem.ts`, `src/App.ts`
+  - Calculate actual distance from torch to targets (currently hardcoded as 0)
+  - Label: `enhancement`
 
-- [ ] **#6** FIX-A4: Add debug logging
-  - File: `src/App.ts`
-  - Add frame counter and render confirmation
-  - Label: `fix`, `coder-a`, `phase-1`
+### Secondary (After Critical Path)
+- [ ] **#23** A-MECH-1: Implement oxygen/battery depletion
+  - Files: `src/App.ts`, `src/state/GameStateActions.ts`, `src/core/Constants.ts`
+  - Drain resources over time, game over when depleted
+  - Label: `enhancement`
 
-### Phase 2: Controls Working
-- [ ] **#7** FIX-A5: Verify input integration
-  - File: `src/App.ts`
-  - Ensure input→submarine→physics loop works
-  - Label: `fix`, `coder-a`
+- [ ] **#24** A-MECH-2: Add win/lose conditions
+  - Files: `src/App.ts`, `src/state/GameState.ts`
+  - Add missionResult state, check win/lose conditions
+  - Label: `enhancement`
 
-- [ ] **#8** FIX-A6: Fix welding activation
-  - File: `src/App.ts`
-  - Ensure Numpad 0 triggers torch activation
-  - Label: `fix`, `coder-a`
-
-### Phase 3: Full UI
-- [ ] **#5** FIX-A3: Implement camera switching with Tab
-  - File: `src/App.ts`
-  - Wire Tab key to `cameraManager.cycleMainCamera()`
-  - Label: `fix`, `coder-a`
+### Low Priority
+- [ ] **#27** A-MECH-5: Add basic collision detection
+  - Files: NEW `src/physics/CollisionSystem.ts`, `src/App.ts`
+  - Prevent submarine from passing through seafloor/surface
+  - Label: `enhancement`
 
 ---
 
 ## Instructions
 
-1. Work on Phase 1 issues first (#3, #4, #6)
-2. After each fix:
+1. Start with #26 (mission system) - enables everything else
+2. Then #25 (proximity) - enables accurate scoring
+3. After each task:
    - Test with `npm run dev`
-   - Commit with message: `[FIX-A#] description`
-   - Close issue with `gh issue close #`
+   - Commit with message: `[CODER-A] #XX: description`
    - Push to dev/coder-a
-3. Verify submarine is visible before moving to Phase 2
-4. Create PR when all fixes complete
+4. Wait for SUPERVISOR merge before next phase
 
 ---
 
@@ -60,27 +54,42 @@ All original 18 tasks complete. Now fixing rendering bug.
 
 ```bash
 # View assigned issues
-gh issue list --label coder-a
+gh issue list --assignee ""
 
 # Work on issue
 git checkout dev/coder-a
+git pull origin main
 # Make changes...
-git commit -m "[FIX-A1] Add main canvas render pass"
-gh issue close 3
+npm run dev  # Test
+npx tsc --noEmit  # Type check
+git add -A && git commit -m "[CODER-A] #26: Connect mission system to gameplay"
 git push origin dev/coder-a
-
-# Test
-npm run dev
 ```
 
 ---
 
-## Root Cause Reference
+## Key Files Reference
 
-The `CameraManager.render()` method only renders to WebGLRenderTargets (textures) but never renders to the visible canvas. After rendering 4 viewport textures, it sets render target back to `null` without actually rendering anything visible.
+| File | Purpose |
+|------|---------|
+| `src/App.ts` | Main orchestrator - add mission/resource logic here |
+| `src/missions/MissionLoader.ts` | Already has load/start/complete methods |
+| `src/systems/WeldingSystem.ts` | Add proximity check method |
+| `src/state/GameState.ts` | Add missionResult field |
+| `src/core/Constants.ts` | Has OXYGEN/BATTERY drain rates |
 
-**FIX:** Add final render pass after viewport textures:
-```typescript
-this.renderer.setRenderTarget(null);
-this.renderer.render(this.scene, mainCamera);
-```
+---
+
+## Completed Tasks
+
+### Original Build (18/18)
+- A1-A4: Foundation, Core
+- A5-A8: Input System
+- A9-A10: Physics
+- A11-A12: State Management
+- A13-A15: Welding/Scoring Systems
+- A16-A17: Multiplayer/Metrics
+- A18: App Orchestrator
+
+### Fix Phase
+- #3, #4, #5, #6, #7, #8: Rendering and input fixes

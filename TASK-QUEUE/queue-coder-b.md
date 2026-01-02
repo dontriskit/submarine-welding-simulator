@@ -1,58 +1,51 @@
-# CODER-B TASK QUEUE - FIX PHASE
+# CODER-B TASK QUEUE - FIRST SCENARIO
 
-## Status: Fixing Dark Screen Issue
+## Status: Creating Pipeline Welding Scenario
 
-All original 15 tasks complete. Now fixing scene visibility and UI viewport display.
+Previous phases complete. Now creating the first playable scenario.
 
 ---
 
 ## GitHub Issues (Track progress at github.com)
 
-### Phase 1: Get Visible (Priority)
-- [ ] **#11** FIX-B3: Add seafloor plane
-  - File: `src/environment/UnderwaterEnv.ts`
-  - Add visible ground reference at y=-50
-  - Label: `fix`, `coder-b`, `phase-1`
+### Critical Path (Do First)
+- [ ] **#28** B-SCENE-1: Create modular pipeline geometry
+  - Files: `src/environment/UnderwaterEnv.ts` or new `src/environment/PipelineScene.ts`
+  - Remove hardcoded pipe, create 6-section pipeline with joints
+  - Label: `enhancement`
 
-- [ ] **#13** FIX-B5: Boost lighting
-  - File: `src/environment/UnderwaterEnv.ts`
-  - Increase ambient from 0.4→0.8, sun from 0.3→0.6
-  - Label: `fix`, `coder-b`, `phase-1`
+- [ ] **#29** B-SCENE-2: Add visual weld target markers
+  - Files: NEW `src/entities/WeldTarget.ts`, `src/environment/UnderwaterEnv.ts`
+  - Glowing rings at weld locations, pulse animation, red→green status
+  - Label: `enhancement`
 
-### Phase 2: Controls Working
-- [ ] **#12** FIX-B4: Add pipe structure
-  - File: `src/environment/UnderwaterEnv.ts`
-  - Add weld target pipe for testing
-  - Label: `fix`, `coder-b`
+### Secondary (After Critical Path)
+- [ ] **#30** B-SCENE-3: Add procedural textures
+  - Files: NEW `src/materials/ProceduralMaterials.ts`, `src/environment/UnderwaterEnv.ts`
+  - Shader materials: rusted metal, sandy seafloor, damaged welds
+  - Label: `enhancement`
 
-- [ ] **#14** FIX-B6: Enhance submarine lights
-  - File: `src/entities/Submarine.ts`
-  - Make headlights more visible
-  - Label: `fix`, `coder-b`
+- [ ] **#31** B-SCENE-4: Create SinglePipelineScenario definition
+  - Files: NEW `src/scenarios/SinglePipelineScenario.ts`, `src/scenarios/index.ts`
+  - 6 weld targets, 10 min time limit, spawn position
+  - Label: `enhancement`
 
-### Phase 3: Full UI
-- [ ] **#9** FIX-B1: Create ViewportDisplay component
-  - File: `src/ui/ViewportDisplay.ts` (NEW)
-  - Component to render WebGLRenderTarget textures to UI canvases
-  - Label: `fix`, `coder-b`
-
-- [ ] **#10** FIX-B2: Wire viewport displays to UI
-  - File: `src/ui/UIManager.ts`
-  - Connect ViewportDisplay to viewport panels
-  - Label: `fix`, `coder-b`
+- [ ] **#32** B-SCENE-5: Integrate scene with mission loader
+  - Files: `src/App.ts`, `src/environment/UnderwaterEnv.ts`
+  - Wire scene creation to mission data, completion events
+  - Label: `enhancement`
 
 ---
 
 ## Instructions
 
-1. Work on Phase 1 issues first (#11, #13)
-2. After each fix:
+1. Start with #28 (pipeline geometry) - makes something visible
+2. Then #29 (weld targets) - shows where to weld
+3. After each task:
    - Test with `npm run dev`
-   - Commit with message: `[FIX-B#] description`
-   - Close issue with `gh issue close #`
+   - Commit with message: `[CODER-B] #XX: description`
    - Push to dev/coder-b
-3. Verify seafloor visible before moving to Phase 2
-4. Create PR when all fixes complete
+4. Wait for SUPERVISOR merge before next phase
 
 ---
 
@@ -60,51 +53,57 @@ All original 15 tasks complete. Now fixing scene visibility and UI viewport disp
 
 ```bash
 # View assigned issues
-gh issue list --label coder-b
+gh issue list --assignee ""
 
 # Work on issue
 git checkout dev/coder-b
+git pull origin main
 # Make changes...
-git commit -m "[FIX-B3] Add seafloor plane"
-gh issue close 11
+npm run dev  # Test
+npx tsc --noEmit  # Type check
+git add -A && git commit -m "[CODER-B] #28: Create pipeline geometry"
 git push origin dev/coder-b
-
-# Test
-npm run dev
 ```
 
 ---
 
-## Key Fixes Reference
+## Key Files Reference
 
-### FIX-B3: Seafloor
-```typescript
-const floorGeometry = new THREE.PlaneGeometry(200, 200);
-const floorMaterial = new THREE.MeshStandardMaterial({
-  color: 0x2a1a0a,
-  roughness: 0.9
-});
-const floor = new THREE.Mesh(floorGeometry, floorMaterial);
-floor.rotation.x = -Math.PI / 2;
-floor.position.y = -50;
-this.scene.add(floor);
+| File | Purpose |
+|------|---------|
+| `src/environment/UnderwaterEnv.ts` | Scene setup - add pipeline here |
+| `src/entities/WeldTarget.ts` | NEW - visual weld marker entity |
+| `src/materials/ProceduralMaterials.ts` | NEW - shader materials |
+| `src/scenarios/SinglePipelineScenario.ts` | NEW - mission definition |
+| `src/scenarios/index.ts` | Register new scenario |
+
+---
+
+## Pipeline Design Reference
+
 ```
+                    [Weld 1]    [Weld 2]    [Weld 3]    [Weld 4]    [Weld 5]    [Weld 6]
+                        |           |           |           |           |           |
+  ════════════════════════════════════════════════════════════════════════════════════
+  |--- Section 1 ---|--- Section 2 ---|--- Section 3 ---|--- Section 4 ---|--- etc ---|
 
-### FIX-B5: Lighting
-```typescript
-this.ambientLight = new THREE.AmbientLight(0x4488bb, 0.8);
-this.sunLight = new THREE.DirectionalLight(0xaaccee, 0.6);
+  Total length: ~20m
+  Position: y=-16 (depth), z=10 (in front of spawn)
+  Submarine spawns at x=-5, y=-15, z=5 (facing pipeline)
 ```
 
 ---
 
-## Completed Tasks (Original Phase)
+## Completed Tasks
 
-All B1-B15 tasks from original build are complete:
-- B1-B2: Foundation + Environment
+### Original Build (15/15)
+- B1-B2: Foundation, Environment
 - B3-B5: Entities (Submarine, Arm, Torch)
-- B6-B7: Cameras
+- B6-B7: Camera System
 - B8-B9: UI Foundation
 - B10-B12: UI Components
 - B13-B14: Missions/Scenarios
 - B15: Effects
+
+### Fix Phase
+- #9, #10, #11, #12, #13, #14, #15: Viewports, pipe, lighting, hotkeys
