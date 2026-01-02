@@ -60,6 +60,28 @@
 - [x] **B8**: Create dashboard.css
 - [x] **B9**: Create UIManager.ts
 
+### Phase 6: UI Components
+- [x] **B10**: Create HotkeyHints.ts
+  ```
+  File: src/ui/HotkeyHints.ts
+  Features: Modular hotkey hints panel, mode switching (single/coop)
+  Commit: [CODER-B] B10-B12: Add HotkeyHints, ObjectivesPanel, WeldingGauge components
+  ```
+
+- [x] **B11**: Create ObjectivesPanel.ts
+  ```
+  File: src/ui/ObjectivesPanel.ts
+  Features: Modular objectives display, progress tracking
+  Commit: [CODER-B] B10-B12: Add HotkeyHints, ObjectivesPanel, WeldingGauge components
+  ```
+
+- [x] **B12**: Create WeldingGauge.ts
+  ```
+  File: src/ui/WeldingGauge.ts
+  Features: Torch heat/intensity gauges, visual bars, warning states
+  Commit: [CODER-B] B10-B12: Add HotkeyHints, ObjectivesPanel, WeldingGauge components
+  ```
+
 ---
 
 ## Instructions
@@ -85,3 +107,6 @@
 - [x] B7: 2026-01-02 - CameraManager.ts implemented
 - [x] B8: 2026-01-02 - dashboard.css implemented
 - [x] B9: 2026-01-02 - UIManager.ts implemented
+- [x] B10: 2026-01-02 - HotkeyHints.ts implemented
+- [x] B11: 2026-01-02 - ObjectivesPanel.ts implemented
+- [x] B12: 2026-01-02 - WeldingGauge.ts implemented
