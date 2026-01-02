@@ -25,6 +25,11 @@ import { trainingMetrics } from './training/TrainingMetrics';
 import { BubbleEffect, SparkEffect, CausticsEffect } from './effects';
 import { MissionLoader } from './missions/MissionLoader';
 import { SCENARIOS } from './scenarios/index';
+import {
+  OXYGEN_CONSUMPTION_RATE,
+  BATTERY_DRAIN_RATE,
+  BATTERY_WELD_DRAIN_RATE,
+} from './core/Constants';
 
 /**
  * Main Application class
@@ -294,8 +299,19 @@ export class App {
     // Update game state time
     gameState.dispatch(tickTime(delta));
 
+    // Update resource depletion (oxygen and battery)
+    this.updateResources(delta);
+
     // Sync submarine state to game state
     this.syncSubmarineState();
+
+    // Check for resource depletion game over
+    const currentState = gameState.getState();
+    if (currentState.submarine.oxygen <= 0 || currentState.submarine.battery <= 0) {
+      this.missionLoader?.endMission(false);
+      gameState.dispatch(setPhase('results'));
+      console.log('Game Over: Resources depleted');
+    }
 
     // Check mission end conditions
     if (this.missionLoader?.shouldMissionEnd()) {
@@ -535,6 +551,27 @@ export class App {
       position: { x: pos.x, y: pos.y, z: pos.z },
       rotation: { x: rot.x, y: rot.y, z: rot.z },
       depth: Math.abs(pos.y),
+    }));
+  }
+
+  /**
+   * Update resource consumption (oxygen and battery)
+   */
+  private updateResources(delta: number): void {
+    const state = gameState.getState();
+
+    // Oxygen depletes constantly
+    const newOxygen = Math.max(0, state.submarine.oxygen - OXYGEN_CONSUMPTION_RATE * delta);
+
+    // Battery drains faster when welding
+    const isWelding = state.welding.torchActive;
+    const batteryDrain = isWelding ? BATTERY_WELD_DRAIN_RATE : BATTERY_DRAIN_RATE;
+    const newBattery = Math.max(0, state.submarine.battery - batteryDrain * delta);
+
+    // Update state with new resource values
+    gameState.dispatch(updateSubmarine({
+      oxygen: newOxygen,
+      battery: newBattery,
     }));
   }
 }
