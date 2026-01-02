@@ -1,9 +1,16 @@
 #!/bin/bash
 # DISPATCH.SH - Control all 3 Claude Code terminals from one CLI
+# Uses git worktrees for parallel development without branch conflicts
 # Usage: ./dispatch.sh <command> [args]
 
-PROJECT_DIR="/home/mhm/Documents/submarine-welding-simulator"
-QUEUE_DIR="$PROJECT_DIR/TASK-QUEUE"
+# ============================================================
+# SEPARATE DIRECTORIES FOR EACH ROLE (git worktrees)
+# ============================================================
+DIR_MAIN="/home/mhm/Documents/submarine-welding-simulator"      # SUPERVISOR - main branch
+DIR_CODER_A="/home/mhm/Documents/submarine-coder-a"             # CODER-A - dev/coder-a branch
+DIR_CODER_B="/home/mhm/Documents/submarine-coder-b"             # CODER-B - dev/coder-b branch
+
+QUEUE_DIR="$DIR_MAIN/TASK-QUEUE"
 
 # Colors
 RED='\033[0;31m'
@@ -13,429 +20,340 @@ BLUE='\033[0;34m'
 CYAN='\033[0;36m'
 NC='\033[0m' # No Color
 
-# Timestamp
-ts() {
-    date "+%Y-%m-%d %H:%M"
-}
+ts() { date "+%Y-%m-%d %H:%M"; }
 
-# Agent prompts - these assume agent knows NOTHING about the project
+# ============================================================
+# AGENT PROMPTS - Assume agent knows NOTHING, uses WORKTREE
+# ============================================================
+
 PROMPT_CODER_A='You are CODER-A in a parallel development team.
 
-FIRST, read these files IN ORDER to understand the project:
-1. @COLLABORATION-RULES.md - Your branch rules, file ownership, commit protocol
-2. @ROLES/terminal-1-coder-a.md - Your specific role and responsibilities
+YOUR WORKING DIRECTORY: /home/mhm/Documents/submarine-coder-a
+YOUR BRANCH: dev/coder-a (already checked out - DO NOT switch branches)
+
+FIRST, read these files IN ORDER:
+1. @COLLABORATION-RULES.md - Branch rules, file ownership, commit format
+2. @ROLES/terminal-1-coder-a.md - Your role and workflow
 3. @TASK-QUEUE/queue-coder-a.md - Your task queue
-4. @src/types/interfaces.ts - Shared interface contracts you must implement
+4. @src/types/interfaces.ts - Interface contracts to implement
 
-THEN:
-1. Checkout branch: git checkout dev/coder-a
-2. Pull latest: git pull origin dev/coder-a
-3. Find first task marked [ ] in your queue
-4. Implement it following COLLABORATION-RULES.md
-5. Commit with format: [CODER-A] <task-id>: <description>
-6. Mark task [x] in queue file
-7. Push: git push origin dev/coder-a
-8. Continue to next task
+WORKFLOW:
+1. git pull origin dev/coder-a
+2. Find first [ ] task in queue
+3. Implement following COLLABORATION-RULES.md
+4. Commit: [CODER-A] <task-id>: <description>
+5. Mark [x] in queue, push to origin
+6. Continue next task
 
-You own: src/core/*, src/input/*, src/state/*, src/physics/*, src/systems/*, src/training/*, src/multiplayer/*, src/App.ts
-You must NEVER edit files owned by CODER-B.'
+YOUR FILES: src/core/*, src/input/*, src/state/*, src/physics/*, src/systems/*, src/training/*, src/multiplayer/*, src/App.ts
+NEVER EDIT: src/entities/*, src/ui/*, src/cameras/*, public/* (CODER-B owns these)'
 
 PROMPT_CODER_B='You are CODER-B in a parallel development team.
 
-FIRST, read these files IN ORDER to understand the project:
-1. @COLLABORATION-RULES.md - Your branch rules, file ownership, commit protocol
-2. @ROLES/terminal-2-coder-b.md - Your specific role and responsibilities
+YOUR WORKING DIRECTORY: /home/mhm/Documents/submarine-coder-b
+YOUR BRANCH: dev/coder-b (already checked out - DO NOT switch branches)
+
+FIRST, read these files IN ORDER:
+1. @COLLABORATION-RULES.md - Branch rules, file ownership, commit format
+2. @ROLES/terminal-2-coder-b.md - Your role and workflow
 3. @TASK-QUEUE/queue-coder-b.md - Your task queue
-4. @src/types/interfaces.ts - Shared interface contracts you must implement
+4. @src/types/interfaces.ts - Interface contracts to implement
 
-THEN:
-1. Checkout branch: git checkout dev/coder-b
-2. Pull latest: git pull origin dev/coder-b
-3. Find first task marked [ ] in your queue
-4. Implement it following COLLABORATION-RULES.md
-5. Commit with format: [CODER-B] <task-id>: <description>
-6. Mark task [x] in queue file
-7. Push: git push origin dev/coder-b
-8. Continue to next task
+WORKFLOW:
+1. git pull origin dev/coder-b
+2. Find first [ ] task in queue
+3. Implement following COLLABORATION-RULES.md
+4. Commit: [CODER-B] <task-id>: <description>
+5. Mark [x] in queue, push to origin
+6. Continue next task
 
-You own: src/entities/*, src/cameras/*, src/ui/*, src/effects/*, src/environment/*, src/scenarios/*, src/missions/*, src/shaders/*, public/*
-You must NEVER edit files owned by CODER-A.'
+YOUR FILES: src/entities/*, src/cameras/*, src/ui/*, src/effects/*, src/environment/*, src/scenarios/*, src/missions/*, src/shaders/*, public/*
+NEVER EDIT: src/core/*, src/input/*, src/state/* (CODER-A owns these)'
 
 PROMPT_SUPERVISOR='You are SUPERVISOR in a parallel development team.
 
-FIRST, read these files IN ORDER to understand the project:
-1. @COLLABORATION-RULES.md - Branch strategy, merge rules, conflict resolution
-2. @ROLES/terminal-3-supervisor.md - Your specific role and responsibilities
-3. @CORE-PLAN-SUPERVISION.md - PR review checklists for each merge point
-4. @TASK-QUEUE/queue-supervisor.md - Your task queue
-5. @CORE-PLAN.md - Full project tech tree and progress
+YOUR WORKING DIRECTORY: /home/mhm/Documents/submarine-welding-simulator
+YOUR BRANCH: main (DO NOT switch branches)
 
-THEN:
-1. Stay on branch: main
-2. Monitor TASK-QUEUE/*.log files for blockers and requests
-3. When both coders complete a phase, review their PRs
+FIRST, read these files IN ORDER:
+1. @COLLABORATION-RULES.md - Merge rules, conflict resolution
+2. @ROLES/terminal-3-supervisor.md - Your role and workflow
+3. @CORE-PLAN-SUPERVISION.md - PR review checklists
+4. @TASK-QUEUE/queue-supervisor.md - Your tasks
+5. @CORE-PLAN.md - Tech tree and progress
+
+WORKFLOW:
+1. git pull origin main
+2. Monitor TASK-QUEUE/*.log for blockers/requests
+3. When coders finish phase, review PRs
 4. ALWAYS merge CODER-A first, then CODER-B
-5. Run integration tests after each merge
-6. Update progress in CORE-PLAN.md and CORE-PLAN-SUPERVISION.md
+5. Run tests after merge
+6. Update progress tracking
 
-You control merges to main. You never code - only review, merge, and coordinate.'
+YOU NEVER CODE - only review, merge, coordinate.'
 
 case "$1" in
     # ============================================================
-    # LAUNCH COMMANDS
+    # SETUP
     # ============================================================
+    setup)
+        echo -e "${GREEN}Setting up git worktrees...${NC}"
+        cd "$DIR_MAIN"
 
+        if [ ! -d "$DIR_CODER_A" ]; then
+            git worktree add "$DIR_CODER_A" dev/coder-a
+            echo -e "${GREEN}Created: $DIR_CODER_A (dev/coder-a)${NC}"
+        else
+            echo -e "${YELLOW}Exists: $DIR_CODER_A${NC}"
+        fi
+
+        if [ ! -d "$DIR_CODER_B" ]; then
+            git worktree add "$DIR_CODER_B" dev/coder-b
+            echo -e "${GREEN}Created: $DIR_CODER_B (dev/coder-b)${NC}"
+        else
+            echo -e "${YELLOW}Exists: $DIR_CODER_B${NC}"
+        fi
+
+        echo ""
+        git worktree list
+        ;;
+
+    worktrees)
+        cd "$DIR_MAIN" && git worktree list
+        ;;
+
+    # ============================================================
+    # LAUNCH
+    # ============================================================
     start-all)
-        echo -e "${GREEN}=== MULTI-TERMINAL LAUNCH ===${NC}"
+        echo -e "${GREEN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+        echo -e "${GREEN}  PARALLEL DEVELOPMENT - 3 SEPARATE DIRECTORIES${NC}"
+        echo -e "${GREEN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
         echo ""
-        echo "Open 3 terminal windows and run one command in each:"
+        echo -e "${CYAN}Terminal 1 - CODER-A:${NC}"
+        echo -e "  ${YELLOW}cd $DIR_CODER_A${NC}"
+        echo '  claude "You are CODER-A. Read @COLLABORATION-RULES.md, @ROLES/terminal-1-coder-a.md, @TASK-QUEUE/queue-coder-a.md. Your branch is dev/coder-a. Execute tasks."'
         echo ""
-        echo -e "${CYAN}━━━ Terminal 1 (CODER-A) ━━━${NC}"
-        echo "cd $PROJECT_DIR"
-        echo 'claude "'"$PROMPT_CODER_A"'"'
+        echo -e "${CYAN}Terminal 2 - CODER-B:${NC}"
+        echo -e "  ${YELLOW}cd $DIR_CODER_B${NC}"
+        echo '  claude "You are CODER-B. Read @COLLABORATION-RULES.md, @ROLES/terminal-2-coder-b.md, @TASK-QUEUE/queue-coder-b.md. Your branch is dev/coder-b. Execute tasks."'
         echo ""
-        echo -e "${CYAN}━━━ Terminal 2 (CODER-B) ━━━${NC}"
-        echo "cd $PROJECT_DIR"
-        echo 'claude "'"$PROMPT_CODER_B"'"'
+        echo -e "${CYAN}Terminal 3 - SUPERVISOR:${NC}"
+        echo -e "  ${YELLOW}cd $DIR_MAIN${NC}"
+        echo '  claude "You are SUPERVISOR. Read @COLLABORATION-RULES.md, @CORE-PLAN-SUPERVISION.md, @TASK-QUEUE/queue-supervisor.md. Monitor and merge PRs."'
         echo ""
-        echo -e "${CYAN}━━━ Terminal 3 (SUPERVISOR) ━━━${NC}"
-        echo "cd $PROJECT_DIR"
-        echo 'claude "'"$PROMPT_SUPERVISOR"'"'
-        echo ""
-        echo -e "${YELLOW}TIP: Use ./dispatch.sh status to monitor progress${NC}"
+        echo -e "${GREEN}Or use: ./dispatch.sh start-a | start-b | start-super${NC}"
         ;;
 
     start-a)
-        echo -e "${CYAN}Launching CODER-A...${NC}"
-        cd "$PROJECT_DIR"
+        echo -e "${CYAN}Launching CODER-A in $DIR_CODER_A${NC}"
+        cd "$DIR_CODER_A"
         claude "$PROMPT_CODER_A"
         ;;
 
     start-b)
-        echo -e "${CYAN}Launching CODER-B...${NC}"
-        cd "$PROJECT_DIR"
+        echo -e "${CYAN}Launching CODER-B in $DIR_CODER_B${NC}"
+        cd "$DIR_CODER_B"
         claude "$PROMPT_CODER_B"
         ;;
 
     start-super)
-        echo -e "${CYAN}Launching SUPERVISOR...${NC}"
-        cd "$PROJECT_DIR"
+        echo -e "${CYAN}Launching SUPERVISOR in $DIR_MAIN${NC}"
+        cd "$DIR_MAIN"
         claude "$PROMPT_SUPERVISOR"
         ;;
 
-    # Quick single-task prompts (agent continues existing context)
+    # Quick tasks
     task-a)
-        TASK="$2"
-        if [ -z "$TASK" ]; then
-            echo "Usage: $0 task-a \"task description\""
-            exit 1
-        fi
-        cd "$PROJECT_DIR"
-        claude "You are CODER-A. Read @COLLABORATION-RULES.md for your file ownership rules. Task: $TASK. Commit as [CODER-A] when done."
+        [ -z "$2" ] && echo "Usage: $0 task-a \"task\"" && exit 1
+        cd "$DIR_CODER_A"
+        claude "You are CODER-A in $DIR_CODER_A (dev/coder-a). Read @COLLABORATION-RULES.md. Task: $2. Commit as [CODER-A]."
         ;;
 
     task-b)
-        TASK="$2"
-        if [ -z "$TASK" ]; then
-            echo "Usage: $0 task-b \"task description\""
-            exit 1
-        fi
-        cd "$PROJECT_DIR"
-        claude "You are CODER-B. Read @COLLABORATION-RULES.md for your file ownership rules. Task: $TASK. Commit as [CODER-B] when done."
+        [ -z "$2" ] && echo "Usage: $0 task-b \"task\"" && exit 1
+        cd "$DIR_CODER_B"
+        claude "You are CODER-B in $DIR_CODER_B (dev/coder-b). Read @COLLABORATION-RULES.md. Task: $2. Commit as [CODER-B]."
         ;;
 
     task-super)
-        TASK="$2"
-        if [ -z "$TASK" ]; then
-            echo "Usage: $0 task-super \"task description\""
-            exit 1
-        fi
-        cd "$PROJECT_DIR"
-        claude "You are SUPERVISOR. Read @COLLABORATION-RULES.md and @CORE-PLAN-SUPERVISION.md. Task: $TASK"
+        [ -z "$2" ] && echo "Usage: $0 task-super \"task\"" && exit 1
+        cd "$DIR_MAIN"
+        claude "You are SUPERVISOR in $DIR_MAIN (main). Read @COLLABORATION-RULES.md. Task: $2"
         ;;
 
     # ============================================================
-    # CONTINUE COMMANDS (for agents that lost context)
+    # CONTINUE (lost context)
     # ============================================================
-
     continue-a)
-        cd "$PROJECT_DIR"
-        claude 'You are CODER-A resuming work.
-
-Read @COLLABORATION-RULES.md to remember your rules.
-Read @TASK-QUEUE/queue-coder-a.md to find your next task.
-
-Your branch: dev/coder-a
-Your files: src/core/*, src/input/*, src/state/*, src/physics/*, src/systems/*, src/training/*, src/multiplayer/*
-
-Continue with the first [ ] task in your queue.'
+        cd "$DIR_CODER_A"
+        claude "You are CODER-A in $DIR_CODER_A (dev/coder-a). Read @COLLABORATION-RULES.md and @TASK-QUEUE/queue-coder-a.md. Continue first [ ] task."
         ;;
 
     continue-b)
-        cd "$PROJECT_DIR"
-        claude 'You are CODER-B resuming work.
-
-Read @COLLABORATION-RULES.md to remember your rules.
-Read @TASK-QUEUE/queue-coder-b.md to find your next task.
-
-Your branch: dev/coder-b
-Your files: src/entities/*, src/cameras/*, src/ui/*, src/effects/*, src/environment/*, src/scenarios/*, src/missions/*, public/*
-
-Continue with the first [ ] task in your queue.'
+        cd "$DIR_CODER_B"
+        claude "You are CODER-B in $DIR_CODER_B (dev/coder-b). Read @COLLABORATION-RULES.md and @TASK-QUEUE/queue-coder-b.md. Continue first [ ] task."
         ;;
 
     continue-super)
-        cd "$PROJECT_DIR"
-        claude 'You are SUPERVISOR resuming work.
-
-Read @COLLABORATION-RULES.md and @CORE-PLAN-SUPERVISION.md to remember your rules.
-Read @TASK-QUEUE/queue-supervisor.md for your tasks.
-Check @TASK-QUEUE/blocked.log and @TASK-QUEUE/human-request.log for pending issues.
-
-Your branch: main
-Your job: Review PRs, merge (A first then B), run tests, coordinate.'
+        cd "$DIR_MAIN"
+        claude "You are SUPERVISOR in $DIR_MAIN (main). Read @COLLABORATION-RULES.md, @CORE-PLAN-SUPERVISION.md. Check logs, merge if ready."
         ;;
 
     # ============================================================
-    # STATUS COMMANDS
+    # STATUS
     # ============================================================
-
     status)
         echo -e "${GREEN}=== PROJECT STATUS ===${NC}"
         echo ""
+        echo -e "${CYAN}Worktrees:${NC}"
+        cd "$DIR_MAIN" && git worktree list
+        echo ""
 
-        echo -e "${CYAN}CODER-A Progress:${NC}"
+        echo -e "${CYAN}CODER-A ($DIR_CODER_A):${NC}"
         DONE_A=$(grep -c "\[x\]" "$QUEUE_DIR/queue-coder-a.md" 2>/dev/null || echo 0)
         TODO_A=$(grep -c "\[ \]" "$QUEUE_DIR/queue-coder-a.md" 2>/dev/null || echo 0)
-        echo "  Completed: $DONE_A | Remaining: $TODO_A"
-        echo "  Next task: $(grep -m1 "\[ \]" "$QUEUE_DIR/queue-coder-a.md" 2>/dev/null | head -1 || echo "(none)")"
+        echo "  Done: $DONE_A | Todo: $TODO_A"
+        echo "  Next: $(grep -m1 "\[ \]" "$QUEUE_DIR/queue-coder-a.md" 2>/dev/null | sed 's/.*\*\*\([^*]*\)\*\*.*/\1/' | head -c 50)"
 
         echo ""
-        echo -e "${CYAN}CODER-B Progress:${NC}"
+        echo -e "${CYAN}CODER-B ($DIR_CODER_B):${NC}"
         DONE_B=$(grep -c "\[x\]" "$QUEUE_DIR/queue-coder-b.md" 2>/dev/null || echo 0)
         TODO_B=$(grep -c "\[ \]" "$QUEUE_DIR/queue-coder-b.md" 2>/dev/null || echo 0)
-        echo "  Completed: $DONE_B | Remaining: $TODO_B"
-        echo "  Next task: $(grep -m1 "\[ \]" "$QUEUE_DIR/queue-coder-b.md" 2>/dev/null | head -1 || echo "(none)")"
+        echo "  Done: $DONE_B | Todo: $TODO_B"
+        echo "  Next: $(grep -m1 "\[ \]" "$QUEUE_DIR/queue-coder-b.md" 2>/dev/null | sed 's/.*\*\*\([^*]*\)\*\*.*/\1/' | head -c 50)"
 
         echo ""
-        echo -e "${CYAN}SUPERVISOR Progress:${NC}"
+        echo -e "${CYAN}SUPERVISOR ($DIR_MAIN):${NC}"
         DONE_S=$(grep -c "\[x\]" "$QUEUE_DIR/queue-supervisor.md" 2>/dev/null || echo 0)
         TODO_S=$(grep -c "\[ \]" "$QUEUE_DIR/queue-supervisor.md" 2>/dev/null || echo 0)
-        echo "  Completed: $DONE_S | Remaining: $TODO_S"
+        echo "  Done: $DONE_S | Todo: $TODO_S"
 
         echo ""
-        echo -e "${YELLOW}Recent Completions:${NC}"
-        tail -5 "$QUEUE_DIR/completed.log" 2>/dev/null | grep -v "^#" | grep -v "^$" || echo "  (none)"
+        echo -e "${YELLOW}Completed:${NC}"
+        tail -3 "$QUEUE_DIR/completed.log" 2>/dev/null | grep -v "^#" | grep -v "^$" || echo "  (none)"
 
         echo ""
-        echo -e "${RED}Active Blockers:${NC}"
-        tail -5 "$QUEUE_DIR/blocked.log" 2>/dev/null | grep -v "^#" | grep -v "^$" || echo "  (none)"
-
-        echo ""
-        echo -e "${YELLOW}Pending Human Requests:${NC}"
-        tail -5 "$QUEUE_DIR/human-request.log" 2>/dev/null | grep -v "^#" | grep -v "^$" || echo "  (none)"
+        echo -e "${RED}Blockers:${NC}"
+        tail -3 "$QUEUE_DIR/blocked.log" 2>/dev/null | grep -v "^#" | grep -v "^$" || echo "  (none)"
         ;;
 
     watch)
-        echo -e "${GREEN}Watching for updates... (Ctrl+C to stop)${NC}"
         watch -n 5 "$0 status"
         ;;
 
     # ============================================================
-    # QUEUE MANAGEMENT
+    # QUEUE
     # ============================================================
-
     add-task)
-        ROLE="$2"
-        TASK="$3"
-        if [ -z "$ROLE" ] || [ -z "$TASK" ]; then
-            echo "Usage: $0 add-task <a|b|super> \"task description\""
-            exit 1
-        fi
-
-        case "$ROLE" in
+        [ -z "$2" ] || [ -z "$3" ] && echo "Usage: $0 add-task <a|b|super> \"task\"" && exit 1
+        case "$2" in
             a) FILE="$QUEUE_DIR/queue-coder-a.md" ;;
             b) FILE="$QUEUE_DIR/queue-coder-b.md" ;;
             super) FILE="$QUEUE_DIR/queue-supervisor.md" ;;
-            *) echo "Invalid role. Use: a, b, or super"; exit 1 ;;
+            *) echo "Invalid: use a, b, or super"; exit 1 ;;
         esac
-
-        echo "" >> "$FILE"
-        echo "- [ ] **HUMAN-ADDED**: $TASK" >> "$FILE"
-        echo -e "${GREEN}Task added to $ROLE queue${NC}"
+        echo "- [ ] **HUMAN**: $3" >> "$FILE"
+        echo -e "${GREEN}Added to $2 queue${NC}"
         ;;
 
     unblock)
-        ROLE="$2"
-        MSG="$3"
-        if [ -z "$ROLE" ]; then
-            echo "Usage: $0 unblock <a|b|super> [message]"
-            exit 1
-        fi
-        echo "[$(ts)] [HUMAN] UNBLOCKED $ROLE: ${MSG:-proceed}" >> "$QUEUE_DIR/blocked.log"
-        echo -e "${GREEN}Unblock signal sent for $ROLE${NC}"
+        [ -z "$2" ] && echo "Usage: $0 unblock <a|b|super> [msg]" && exit 1
+        echo "[$(ts)] [HUMAN] UNBLOCKED $2: ${3:-proceed}" >> "$QUEUE_DIR/blocked.log"
+        echo -e "${GREEN}Unblocked $2${NC}"
         ;;
 
     respond)
-        MSG="$2"
-        if [ -z "$MSG" ]; then
-            echo "Usage: $0 respond \"response message\""
-            exit 1
-        fi
-        echo "[$(ts)] [HUMAN] RESPONSE: $MSG" >> "$QUEUE_DIR/human-request.log"
+        [ -z "$2" ] && echo "Usage: $0 respond \"msg\"" && exit 1
+        echo "[$(ts)] [HUMAN] RESPONSE: $2" >> "$QUEUE_DIR/human-request.log"
         echo -e "${GREEN}Response logged${NC}"
         ;;
 
     # ============================================================
-    # GIT COMMANDS
+    # GIT
     # ============================================================
-
     sync)
-        echo -e "${GREEN}Syncing all branches...${NC}"
-        cd "$PROJECT_DIR"
-        git fetch origin
-
-        CURRENT=$(git branch --show-current)
-
-        git checkout main && git pull origin main
-        git checkout dev/coder-a && git pull origin dev/coder-a
-        git checkout dev/coder-b && git pull origin dev/coder-b
-
-        git checkout "$CURRENT"
-        echo -e "${GREEN}All branches synced. Back on: $CURRENT${NC}"
+        echo -e "${GREEN}Syncing all worktrees...${NC}"
+        echo -e "${CYAN}Main:${NC}" && cd "$DIR_MAIN" && git pull origin main
+        echo -e "${CYAN}Coder-A:${NC}" && cd "$DIR_CODER_A" && git pull origin dev/coder-a
+        echo -e "${CYAN}Coder-B:${NC}" && cd "$DIR_CODER_B" && git pull origin dev/coder-b
+        echo -e "${GREEN}Done${NC}"
         ;;
 
     merge-a)
-        echo -e "${YELLOW}Merging CODER-A to main...${NC}"
-        cd "$PROJECT_DIR"
-        git checkout main
-        git pull origin main
-        git pull origin dev/coder-a
-        git merge --no-ff origin/dev/coder-a -m "MERGE: CODER-A tasks - $(date +%Y-%m-%d)"
+        echo -e "${YELLOW}Merging CODER-A...${NC}"
+        cd "$DIR_MAIN"
+        git fetch origin
+        git merge --no-ff origin/dev/coder-a -m "MERGE: CODER-A - $(date +%Y-%m-%d)"
         git push origin main
-        echo "[$(ts)] [SUPERVISOR] Merged CODER-A to main" >> "$QUEUE_DIR/completed.log"
-        echo -e "${GREEN}CODER-A merged to main${NC}"
+        echo "[$(ts)] [SUPERVISOR] Merged CODER-A" >> "$QUEUE_DIR/completed.log"
+        echo -e "${GREEN}Done. CODER-A run: git pull origin main${NC}"
         ;;
 
     merge-b)
-        echo -e "${YELLOW}Merging CODER-B to main...${NC}"
-        cd "$PROJECT_DIR"
-        git checkout main
-        git pull origin main
-        git pull origin dev/coder-b
-        git merge --no-ff origin/dev/coder-b -m "MERGE: CODER-B tasks - $(date +%Y-%m-%d)"
+        echo -e "${YELLOW}Merging CODER-B...${NC}"
+        cd "$DIR_MAIN"
+        git fetch origin
+        git merge --no-ff origin/dev/coder-b -m "MERGE: CODER-B - $(date +%Y-%m-%d)"
         git push origin main
-        echo "[$(ts)] [SUPERVISOR] Merged CODER-B to main" >> "$QUEUE_DIR/completed.log"
-        echo -e "${GREEN}CODER-B merged to main${NC}"
+        echo "[$(ts)] [SUPERVISOR] Merged CODER-B" >> "$QUEUE_DIR/completed.log"
+        echo -e "${GREEN}Done. CODER-B run: git pull origin main${NC}"
         ;;
 
     merge-both)
-        echo -e "${YELLOW}Merging both coders (A first per COLLABORATION-RULES.md)...${NC}"
-        $0 merge-a
-        $0 merge-b
-        echo ""
-        echo -e "${GREEN}Both merged. Coders should run:${NC}"
-        echo "  git pull origin main"
+        echo -e "${YELLOW}Merging both (A first per rules)...${NC}"
+        $0 merge-a && $0 merge-b
+        echo -e "${GREEN}Both merged. Coders pull main.${NC}"
         ;;
 
     push-queues)
-        echo -e "${YELLOW}Pushing queue updates...${NC}"
-        cd "$PROJECT_DIR"
-        git add TASK-QUEUE/
-        git commit -m "Update task queues - $(date +%Y-%m-%d)" || true
-        git push origin main
-        echo -e "${GREEN}Queue updates pushed${NC}"
+        cd "$DIR_MAIN"
+        git add TASK-QUEUE/ && git commit -m "Queue update $(date +%Y-%m-%d)" && git push origin main
         ;;
 
     # ============================================================
-    # LOG COMMANDS
+    # LOGS
     # ============================================================
-
     logs)
-        echo -e "${GREEN}=== ALL LOGS ===${NC}"
-        echo ""
-        echo -e "${CYAN}--- Completed ---${NC}"
+        echo -e "${CYAN}=== Completed ===${NC}"
         cat "$QUEUE_DIR/completed.log" | grep -v "^#"
-        echo ""
-        echo -e "${RED}--- Blocked ---${NC}"
+        echo -e "${RED}=== Blocked ===${NC}"
         cat "$QUEUE_DIR/blocked.log" | grep -v "^#"
-        echo ""
-        echo -e "${YELLOW}--- Human Requests ---${NC}"
+        echo -e "${YELLOW}=== Human Requests ===${NC}"
         cat "$QUEUE_DIR/human-request.log" | grep -v "^#"
         ;;
 
     clear-logs)
-        echo "# Completed Tasks Log" > "$QUEUE_DIR/completed.log"
-        echo "# Format: [YYYY-MM-DD HH:MM] [ROLE] description" >> "$QUEUE_DIR/completed.log"
-        echo "" >> "$QUEUE_DIR/completed.log"
-
-        echo "# Blocked Tasks Log" > "$QUEUE_DIR/blocked.log"
-        echo "# Format: [YYYY-MM-DD HH:MM] [ROLE] BLOCKED: reason" >> "$QUEUE_DIR/blocked.log"
-        echo "" >> "$QUEUE_DIR/blocked.log"
-
-        echo "# Human Request Log" > "$QUEUE_DIR/human-request.log"
-        echo "# Format: [YYYY-MM-DD HH:MM] [ROLE] REQUEST: question" >> "$QUEUE_DIR/human-request.log"
-        echo "" >> "$QUEUE_DIR/human-request.log"
-
-        echo -e "${GREEN}Logs cleared${NC}"
+        echo "# Completed" > "$QUEUE_DIR/completed.log"
+        echo "# Blocked" > "$QUEUE_DIR/blocked.log"
+        echo "# Human Requests" > "$QUEUE_DIR/human-request.log"
+        echo -e "${GREEN}Cleared${NC}"
         ;;
 
     # ============================================================
     # HELP
     # ============================================================
-
     help|--help|-h|"")
         echo -e "${GREEN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
-        echo -e "${GREEN}  DISPATCH.SH - Multi-Terminal Claude Code Orchestrator${NC}"
+        echo -e "${GREEN}  DISPATCH - Parallel Claude Code Orchestrator (Git Worktrees)${NC}"
         echo -e "${GREEN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
         echo ""
-        echo -e "${CYAN}LAUNCH (fresh start - agent reads @COLLABORATION-RULES.md):${NC}"
-        echo "  start-all        Show commands to start all 3 terminals"
-        echo "  start-a          Launch CODER-A (reads rules, queue, interfaces)"
-        echo "  start-b          Launch CODER-B (reads rules, queue, interfaces)"
-        echo "  start-super      Launch SUPERVISOR (reads rules, checklists)"
+        echo -e "${YELLOW}DIRECTORIES:${NC}"
+        echo "  SUPERVISOR: $DIR_MAIN (main)"
+        echo "  CODER-A:    $DIR_CODER_A (dev/coder-a)"
+        echo "  CODER-B:    $DIR_CODER_B (dev/coder-b)"
         echo ""
-        echo -e "${CYAN}CONTINUE (agent lost context):${NC}"
-        echo "  continue-a       Resume CODER-A with context refresh"
-        echo "  continue-b       Resume CODER-B with context refresh"
-        echo "  continue-super   Resume SUPERVISOR with context refresh"
-        echo ""
-        echo -e "${CYAN}QUICK TASK (one-off command):${NC}"
-        echo "  task-a \"...\"     Send task to CODER-A"
-        echo "  task-b \"...\"     Send task to CODER-B"
-        echo "  task-super \"...\" Send task to SUPERVISOR"
-        echo ""
-        echo -e "${CYAN}STATUS:${NC}"
-        echo "  status           Show progress of all agents"
-        echo "  watch            Live-watch status (5s refresh)"
-        echo "  logs             Show all communication logs"
-        echo ""
-        echo -e "${CYAN}QUEUE MANAGEMENT:${NC}"
-        echo "  add-task <a|b|super> \"task\"   Add task to queue"
-        echo "  unblock <a|b|super> [msg]      Signal unblock"
-        echo "  respond \"message\"             Respond to human request"
-        echo "  push-queues                    Commit & push queue changes"
-        echo ""
-        echo -e "${CYAN}GIT:${NC}"
-        echo "  sync             Pull all branches"
-        echo "  merge-a          Merge CODER-A to main"
-        echo "  merge-b          Merge CODER-B to main"
-        echo "  merge-both       Merge both (A first per rules)"
-        echo ""
-        echo -e "${CYAN}LOGS:${NC}"
-        echo "  logs             Show all logs"
-        echo "  clear-logs       Clear all logs"
-        echo ""
-        echo -e "${YELLOW}Key files agents will read:${NC}"
-        echo "  @COLLABORATION-RULES.md - Branch/file ownership rules"
-        echo "  @ROLES/terminal-*.md    - Role-specific instructions"
-        echo "  @TASK-QUEUE/queue-*.md  - Task queues"
-        echo "  @src/types/interfaces.ts - Shared contracts"
+        echo -e "${CYAN}SETUP:${NC}     setup | worktrees"
+        echo -e "${CYAN}LAUNCH:${NC}    start-all | start-a | start-b | start-super"
+        echo -e "${CYAN}CONTINUE:${NC}  continue-a | continue-b | continue-super"
+        echo -e "${CYAN}TASK:${NC}      task-a | task-b | task-super \"...\""
+        echo -e "${CYAN}STATUS:${NC}    status | watch | logs"
+        echo -e "${CYAN}QUEUE:${NC}     add-task <a|b|super> \"...\" | unblock | respond"
+        echo -e "${CYAN}GIT:${NC}       sync | merge-a | merge-b | merge-both | push-queues"
         ;;
 
     *)
-        echo -e "${RED}Unknown command: $1${NC}"
-        echo "Run './dispatch.sh help' for usage"
+        echo -e "${RED}Unknown: $1${NC}. Run './dispatch.sh help'"
         exit 1
         ;;
 esac
