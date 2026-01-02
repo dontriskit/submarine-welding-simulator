@@ -77,6 +77,11 @@
 - [x] **A11**: Create GameState.ts
 - [x] **A12**: Create GameStateActions.ts
 
+### Phase 6: Welding Systems (After MERGE-5)
+- [x] **A13**: Create WeldingSystem.ts
+- [x] **A14**: Create WeldQualityAnalyzer.ts
+- [x] **A15**: Create ScoringSystem.ts
+
 ---
 
 ## Instructions
