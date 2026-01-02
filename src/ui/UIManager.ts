@@ -3,45 +3,14 @@
  * Manages all UI elements, notifications, and pause menu.
  *
  * CODER-B Task B9
+ * Updated with B10-B12 component integration
  */
 
 import type { IUIManager, IGameState, GameStateData } from '../types/interfaces';
+import { HotkeyHints, HotkeyMode } from './HotkeyHints';
+import { ObjectivesPanel } from './ObjectivesPanel';
+import { WeldingGauge } from './WeldingGauge';
 import './dashboard.css';
-
-/**
- * Hotkey hint configuration
- */
-interface HotkeyHint {
-  key: string;
-  action: string;
-}
-
-/**
- * Hotkey configurations for different input modes
- */
-const HOTKEY_CONFIGS: Record<'single' | 'coop-keyboard' | 'coop-gamepad', HotkeyHint[]> = {
-  single: [
-    { key: 'WASD', action: 'Move Sub' },
-    { key: 'QE', action: 'Ascend/Descend' },
-    { key: 'IJKL', action: 'Arm Control' },
-    { key: 'Space', action: 'Weld' },
-    { key: 'L', action: 'Lights' },
-    { key: 'Esc', action: 'Pause' },
-  ],
-  'coop-keyboard': [
-    { key: 'P1: WASD', action: 'Move Sub' },
-    { key: 'P1: QE', action: 'Ascend/Descend' },
-    { key: 'P2: IJKL', action: 'Arm Control' },
-    { key: 'P2: Space', action: 'Weld' },
-    { key: 'Esc', action: 'Pause' },
-  ],
-  'coop-gamepad': [
-    { key: 'KB: WASD', action: 'Move Sub' },
-    { key: 'GP: Sticks', action: 'Arm Control' },
-    { key: 'GP: RT', action: 'Weld' },
-    { key: 'Esc', action: 'Pause' },
-  ],
-};
 
 /**
  * UI Manager - handles all DOM-based UI elements
@@ -59,9 +28,15 @@ export class UIManager implements IUIManager {
     timerValue: HTMLElement;
     notificationContainer: HTMLElement;
     pauseOverlay: HTMLElement;
-    hotkeyHints: HTMLElement;
-    objectivesList: HTMLElement;
+    hotkeyHintsContainer: HTMLElement;
+    objectivesPanelContainer: HTMLElement;
+    weldingGaugeContainer: HTMLElement;
   };
+
+  // Modular UI components (B10-B12)
+  private hotkeyHintsComponent: HotkeyHints | null = null;
+  private objectivesPanelComponent: ObjectivesPanel | null = null;
+  private weldingGaugeComponent: WeldingGauge | null = null;
 
   private notifications: HTMLElement[] = [];
 
@@ -126,11 +101,11 @@ export class UIManager implements IUIManager {
         <!-- Notification Container -->
         <div class="notification-container" id="notification-container"></div>
 
-        <!-- Hotkey Hints -->
-        <div class="hotkey-hints" id="hotkey-hints">
-          <h4>Controls</h4>
-          <div id="hotkey-list"></div>
-        </div>
+        <!-- Hotkey Hints Container (B10 component) -->
+        <div id="hotkey-hints-container"></div>
+
+        <!-- Welding Gauge Container (B12 component) -->
+        <div id="welding-gauge-container"></div>
 
         <!-- Bottom Panels -->
         <div class="bottom-panels">
@@ -140,10 +115,8 @@ export class UIManager implements IUIManager {
           <div class="viewport-panel" id="external-viewport">
             <span class="viewport-label">External</span>
           </div>
-          <div class="objectives-panel">
-            <h3>Objectives</h3>
-            <div id="objectives-list"></div>
-          </div>
+          <!-- Objectives Panel Container (B11 component) -->
+          <div id="objectives-panel-container"></div>
         </div>
 
         <!-- Pause Overlay -->
@@ -164,7 +137,7 @@ export class UIManager implements IUIManager {
       resumeBtn.addEventListener('click', () => this.setPauseMenuVisible(false));
     }
 
-    return {
+    const elements = {
       topBar: document.querySelector('.top-bar') as HTMLElement,
       depthValue: document.getElementById('depth-value') as HTMLElement,
       batteryValue: document.getElementById('battery-value') as HTMLElement,
@@ -174,9 +147,17 @@ export class UIManager implements IUIManager {
       timerValue: document.getElementById('timer-value') as HTMLElement,
       notificationContainer: document.getElementById('notification-container') as HTMLElement,
       pauseOverlay: document.getElementById('pause-overlay') as HTMLElement,
-      hotkeyHints: document.getElementById('hotkey-hints') as HTMLElement,
-      objectivesList: document.getElementById('objectives-list') as HTMLElement,
+      hotkeyHintsContainer: document.getElementById('hotkey-hints-container') as HTMLElement,
+      objectivesPanelContainer: document.getElementById('objectives-panel-container') as HTMLElement,
+      weldingGaugeContainer: document.getElementById('welding-gauge-container') as HTMLElement,
     };
+
+    // Initialize modular components (B10-B12)
+    this.hotkeyHintsComponent = new HotkeyHints(elements.hotkeyHintsContainer);
+    this.objectivesPanelComponent = new ObjectivesPanel(elements.objectivesPanelContainer);
+    this.weldingGaugeComponent = new WeldingGauge(elements.weldingGaugeContainer);
+
+    return elements;
   }
 
   /**
@@ -187,6 +168,7 @@ export class UIManager implements IUIManager {
     this.updateScore(state);
     this.updateTimer(state);
     this.updateObjectives(state);
+    this.updateWeldingGauge(state);
   }
 
   /**
@@ -259,24 +241,22 @@ export class UIManager implements IUIManager {
   }
 
   /**
-   * Update objectives list
+   * Update objectives list (delegates to ObjectivesPanel component)
    */
   private updateObjectives(state: GameStateData): void {
-    const { mission } = state;
-    if (!mission) {
-      this.elements.objectivesList.innerHTML = '<p style="color: var(--ui-text-dim)">No active mission</p>';
-      return;
+    if (this.objectivesPanelComponent) {
+      this.objectivesPanelComponent.update(state.mission?.objectives ?? null);
     }
+  }
 
-    this.elements.objectivesList.innerHTML = mission.objectives
-      .map((obj) => `
-        <div class="objective-item ${obj.completed ? 'completed' : ''}">
-          <div class="checkbox">${obj.completed ? '✓' : ''}</div>
-          <span>${obj.name}</span>
-          <span class="objective-progress">${obj.progress}/${obj.target}</span>
-        </div>
-      `)
-      .join('');
+  /**
+   * Update welding gauge display (delegates to WeldingGauge component)
+   */
+  private updateWeldingGauge(state: GameStateData): void {
+    if (this.weldingGaugeComponent) {
+      const { welding } = state;
+      this.weldingGaugeComponent.update(welding.torchHeat, welding.torchIntensity);
+    }
   }
 
   /**
@@ -354,21 +334,11 @@ export class UIManager implements IUIManager {
   }
 
   /**
-   * Update hotkey hints based on input mode
+   * Update hotkey hints based on input mode (delegates to HotkeyHints component)
    */
   public updateHotkeyHints(mode: 'single' | 'coop-keyboard' | 'coop-gamepad'): void {
-    const hints = HOTKEY_CONFIGS[mode];
-    const hotkeyList = document.getElementById('hotkey-list');
-
-    if (hotkeyList) {
-      hotkeyList.innerHTML = hints
-        .map((hint) => `
-          <div class="hotkey-item">
-            <span class="key">${hint.key}</span>
-            <span class="action">${hint.action}</span>
-          </div>
-        `)
-        .join('');
+    if (this.hotkeyHintsComponent) {
+      this.hotkeyHintsComponent.setMode(mode as HotkeyMode);
     }
   }
 
@@ -380,9 +350,39 @@ export class UIManager implements IUIManager {
   }
 
   /**
+   * Get the welding gauge component for direct access
+   */
+  public getWeldingGauge(): WeldingGauge | null {
+    return this.weldingGaugeComponent;
+  }
+
+  /**
+   * Get the hotkey hints component for direct access
+   */
+  public getHotkeyHints(): HotkeyHints | null {
+    return this.hotkeyHintsComponent;
+  }
+
+  /**
+   * Get the objectives panel component for direct access
+   */
+  public getObjectivesPanel(): ObjectivesPanel | null {
+    return this.objectivesPanelComponent;
+  }
+
+  /**
    * Clean up UI
    */
   public dispose(): void {
+    // Dispose modular components
+    this.hotkeyHintsComponent?.dispose();
+    this.objectivesPanelComponent?.dispose();
+    this.weldingGaugeComponent?.dispose();
+
+    this.hotkeyHintsComponent = null;
+    this.objectivesPanelComponent = null;
+    this.weldingGaugeComponent = null;
+
     this.container.innerHTML = '';
     this.notifications = [];
   }
