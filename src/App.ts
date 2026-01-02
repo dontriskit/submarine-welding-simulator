@@ -23,6 +23,8 @@ import { scoringSystem } from './systems/ScoringSystem';
 import { localCoopManager } from './multiplayer/LocalCoopManager';
 import { trainingMetrics } from './training/TrainingMetrics';
 import { BubbleEffect, SparkEffect, CausticsEffect } from './effects';
+import { MissionLoader } from './missions/MissionLoader';
+import { SCENARIOS } from './scenarios/index';
 
 /**
  * Main Application class
@@ -32,6 +34,7 @@ export class App {
   private submarine: Submarine | null = null;
   private cameraManager: CameraManager | null = null;
   private uiManager: UIManager | null = null;
+  private missionLoader: MissionLoader | null = null;
 
   // Effects (FIX: TEST-B3)
   private bubbleEffect: BubbleEffect | null = null;
@@ -73,8 +76,21 @@ export class App {
     this.submarine = new Submarine();
     this.engine.scene.add(this.submarine.mesh);
 
-    // Position submarine at starting location
-    this.submarine.mesh.position.set(0, -10, 0);
+    // Initialize mission loader
+    this.missionLoader = new MissionLoader(gameState);
+
+    // Register all scenarios
+    for (const scenario of Object.values(SCENARIOS)) {
+      this.missionLoader.registerMission(scenario);
+    }
+
+    // Load default mission (Pipe Repair)
+    this.missionLoader.loadMissionById('pipe-repair-01');
+    this.missionLoader.startMission();
+
+    // Position submarine at mission spawn
+    const spawn = this.missionLoader.getSpawnPosition();
+    this.submarine.mesh.position.set(spawn.x, spawn.y, spawn.z);
 
     // Initialize camera manager
     this.cameraManager = new CameraManager(this.engine.renderer, this.engine.scene);
@@ -154,11 +170,15 @@ export class App {
       this.container.parentElement.removeChild(this.container);
     }
 
+    // Unload mission
+    this.missionLoader?.unloadMission();
+
     // Clear references
     this.engine = null;
     this.submarine = null;
     this.cameraManager = null;
     this.uiManager = null;
+    this.missionLoader = null;
     this.bubbleEffect = null;
     this.sparkEffect = null;
     this.causticsEffect = null;
@@ -203,6 +223,21 @@ export class App {
       const result = data as WeldQualityResult;
       // Show notification with rating
       this.uiManager?.showNotification(`Weld Complete: ${result.rating} (${result.overallScore})`);
+    });
+
+    // Listen for weld completion to update mission objectives
+    EventBus.on(GameEvents.WELD_COMPLETED, (_data: unknown) => {
+      // For now, use first incomplete target (proximity detection in #25)
+      if (this.missionLoader) {
+        const targets = this.missionLoader.getIncompleteWeldTargets();
+        if (targets.length > 0) {
+          // Get quality from game state arc stability (approximate)
+          const state = gameState.getState();
+          const quality = state.welding.arcStability * 100;
+          this.missionLoader.completeWeldTarget(targets[0].id, quality);
+          console.log(`Mission: Completed weld target ${targets[0].id} with quality ${quality.toFixed(0)}`);
+        }
+      }
     });
   }
 
@@ -261,6 +296,14 @@ export class App {
 
     // Sync submarine state to game state
     this.syncSubmarineState();
+
+    // Check mission end conditions
+    if (this.missionLoader?.shouldMissionEnd()) {
+      const success = this.missionLoader.areAllObjectivesComplete();
+      this.missionLoader.endMission(success);
+      gameState.dispatch(setPhase('results'));
+      console.log(`Mission ended: ${success ? 'SUCCESS' : 'FAILED'}`);
+    }
 
     // Update cameras
     this.cameraManager.update(this.submarine);
